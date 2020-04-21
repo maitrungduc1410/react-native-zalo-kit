@@ -48,7 +48,18 @@ After that, open `ios/<your_app_name>/AppDelegate.m`, and add the following:
 }
 ```
 ## Android
-1. Open `android/app/src/main/java/<your_app_package>/MainActivity.java`, and add the following:
+1. Open `android/build.gradle`, and change the `minSdkVersion` to 18:
+```
+buildscript {
+    ext {
+      ...
+
+      minSdkVersion = 18
+    }
+
+    ...
+```
+2. Open `android/app/src/main/java/<your_app_package>/MainActivity.java`, and add the following:
 ```java
 import com.zing.zalo.zalosdk.oauth.ZaloSDK;
 
@@ -64,7 +75,7 @@ public class MainActivity extends ReactActivity {
 }
 ```
 
-2. After that, open `android/app/src/main/java/<your_app_package>/MainApplication.java`, and add the following:
+3. After that, open `android/app/src/main/java/<your_app_package>/MainApplication.java`, and add the following:
 ```java
 import com.zing.zalo.zalosdk.oauth.ZaloSDKApplication;
 
@@ -80,7 +91,7 @@ public class MainApplication extends Application implements ReactApplication {
 }
 ```
 
-3. Add `appID` to `android/app/src/main/res/values/strings.xml`
+4. Add `appID` to `android/app/src/main/res/values/strings.xml`
 ```xml
 <resources>
     <string name="app_name">App Name</string>
@@ -88,7 +99,7 @@ public class MainApplication extends Application implements ReactApplication {
 </res>
 ```
 
-4. Add the following to:
+5. Add the following to:
 ```xml
 <application>
 
