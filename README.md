@@ -1,5 +1,17 @@
 <h1 align="center">
-  <img src="./zalo.svg" width="150" height="150" /><br>
+  <div>
+    <img src="./react-native.png" height="150" />
+    <img src="./zalo.svg" width="150" height="150" />
+  </div>
+  <div>
+  <img src="https://img.shields.io/npm/dw/react-native-zalo-kit" />
+
+  <img src="https://img.shields.io/npm/v/react-native-zalo-kit" />
+
+  <img src="https://img.shields.io/github/license/maitrungduc1410/react-native-zalo-kit" />
+
+  <img src="https://img.shields.io/github/stars/maitrungduc1410/react-native-zalo-kit?style=social" />
+  </div>
   Zalo SDK for React Native
 </h1>
 
