@@ -21,6 +21,8 @@ First of all you need to create Zalo application on [Zalo Developer Portal](http
 
 > Note: when setting up Android platform for your application, it'll ask you for a `Hash key`. We provide you a helper function to [get that key](#get-application-hash-key-android-only)
 
+After that you'll get your Zalo App Key, and you'll need to use it for next sections
+
 ## iOS
 Run the following command to setup for iOS:
 ```
@@ -78,11 +80,11 @@ public class MainApplication extends Application implements ReactApplication {
 }
 ```
 
-3. Add appId to `android/app/src/main/res/values/strings.xml`
+3. Add `appID` to `android/app/src/main/res/values/strings.xml`
 ```xml
 <resources>
     <string name="app_name">App Name</string>
-    <string name="appID"><YOUR_APP_ID></string>
+    <string name="appID"><YOUR_ZALO_APP_ID></string>
 </res>
 ```
 
@@ -102,7 +104,7 @@ public class MainApplication extends Application implements ReactApplication {
       <action android:name="android.intent.action.VIEW" />
       <category android:name="android.intent.category.DEFAULT" />
       <category android:name="android.intent.category.BROWSABLE" />
-      <data android:scheme="zalo-<YOUR_APP_ID>" />
+      <data android:scheme="zalo-<YOUR_ZALO_APP_ID>" />
       <!-- eg: <data android:scheme="zalo-1234567890" />-->
     </intent-filter>
   </activity>
@@ -128,7 +130,7 @@ login()
 ```js
 import { login, Constants } from 'react-native-zalo-kit'
 
-login = async () => {
+const login = async () => {
   try {
     const oauthCode = await login(Constants.AUTH_VIA_APP_OR_WEB)
     console.log(oauthCode)
@@ -146,7 +148,7 @@ login = async () => {
 ```js
 import { isAuthenticated } from 'react-native-zalo-kit'
 
-isAuthenticated = async () => {
+const isAuthenticated = async () => {
   try {
     const isAuthenticated = await ZaloKit.isAuthenticated()
     console.log(isAuthenticated)
@@ -159,7 +161,7 @@ isAuthenticated = async () => {
 ```js
 import { getUserProfile } from 'react-native-zalo-kit'
 
-getUserProfile = async () => {
+const getUserProfile = async () => {
   try {
     const userProfile = await ZaloKit.getUserProfile()
     console.log(userProfile)
@@ -172,7 +174,7 @@ getUserProfile = async () => {
 ```js
 import { logout } from 'react-native-zalo-kit'
 
-logout = () => {
+const logout = () => {
   logout()
 }
 ```
@@ -181,7 +183,7 @@ This is a helper function which returns app Hash key for Android, help you on se
 ```js
 import { getApplicationHashKey } from 'react-native-zalo-kit'
 
-getApplicationHashKey = async () => {
+const getApplicationHashKey = async () => {
   try {
     const key = await getApplicationHashKey()
     console.log(key)
