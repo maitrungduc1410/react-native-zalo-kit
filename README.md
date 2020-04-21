@@ -19,7 +19,7 @@ With yarn:
 ## Create Zalo Application
 First of all you need to create Zalo application on [Zalo Developer Portal](https://developers.zalo.me/)
 
-> Note: when setting up Android platform for your application, it'll ask you for a `Hash key`. We provide you a helper function to [get that key](#Get-Application-Hash-Key-(Android-only))
+> Note: when setting up Android platform for your application, it'll ask you for a `Hash key`. We provide you a helper function to [get that key](#get-application-hash-key-android-only)
 
 ## iOS
 Run the following command to setup for iOS:
