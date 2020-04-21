@@ -1,0 +1,8 @@
+example
+src/
+node_modules/
+.git*
+tsconfig.json
+tslint.json
+*.gif
+zalo.svg
