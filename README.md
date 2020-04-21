@@ -215,3 +215,9 @@ const getApplicationHashKey = async () => {
   }
 }
 ```
+# Troubleshooting
+1. Android: `the parameter pkg_name and sign_key are required`
+
+This error happens because of your configuration on [Zalo Developer Portal](https://developers.zalo.me/) for Android is not correct, review your setup and make sure they're correct:
+- Check your package name
+- Check your Application Hash Key: you can use the function [getApplicationHashKey](#get-application-hash-key-android-only) to check the key of your app.
