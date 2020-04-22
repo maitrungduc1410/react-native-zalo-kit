@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Image, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native'
+import { SafeAreaView, Image, StyleSheet, Text, View, TouchableOpacity, ScrollView, StatusBar } from 'react-native'
 import ZaloKit from 'react-native-zalo-kit'
 
 export default class App extends Component<{}> {
@@ -52,6 +52,7 @@ export default class App extends Component<{}> {
   getUserProfile = async () => {
     try {
       const userProfile = await ZaloKit.getUserProfile()
+      console.log(userProfile)
       this.setState({ userProfile })
     } catch (error) {
       console.log(error)
@@ -68,9 +69,102 @@ export default class App extends Component<{}> {
     }
   }
 
+  getFriendListUsedApp = async () => {
+    try {
+      const friends = await ZaloKit.getFriendListUsedApp(1, 10)
+      console.log(friends)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  getFriendListInvitable = async () => {
+    try {
+      const friends = await ZaloKit.getFriendListInvitable(1, 10)
+      console.log(friends)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  postToWall = async () => {
+    try {
+      const link = 'https://zing.vn'
+      const message = 'Hello World'
+      const post = await ZaloKit.postToWall(link, message)
+      console.log(post)
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
+
+  sendMessageToFriend = async () => {
+    try {
+      const friendId = '3303969417419981371'
+      const link = 'https://zing.vn'
+      const message = 'Hello World'
+      const post = await ZaloKit.sendMessageToFriend(friendId, link, message)
+      console.log(post)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  inviteFriendUseApp = async () => {
+    try {
+      const friendIds = ['3303969417419981371']
+      const message = 'Hello World'
+      const post = await ZaloKit.inviteFriendUseApp(friendIds, message)
+      console.log(post)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  sendMessageToFriendByApp = async () => {
+    try {
+      const feedData = {
+        appName: 'DEMO RN APP',
+        message: 'Hello World',
+        link: 'https://zing.vn',
+        linkTitle: 'LINK TITLE',
+        linkSource: 'LINK SOURCE',
+        linkDesc: 'LINK DESC',
+        linkThumb: ['https://lh3.googleusercontent.com/dr8A58cYr-Mnz6mi5QCe6_I2yaCICVV0jL7fjrzWixn89HiA4BGW-KraR7yU4JappTs'],
+        others: {}
+      }
+
+      const data = await ZaloKit.sendMessageToFriendByApp(feedData)
+      console.log(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  postToWallByApp = async () => {
+    try {
+      const feedData = {
+        appName: 'DEMO RN APP',
+        message: 'Hello World',
+        link: 'https://zing.vn',
+        linkTitle: 'LINK TITLE',
+        linkSource: 'LINK SOURCE',
+        linkDesc: 'LINK DESC',
+        linkThumb: ['https://lh3.googleusercontent.com/dr8A58cYr-Mnz6mi5QCe6_I2yaCICVV0jL7fjrzWixn89HiA4BGW-KraR7yU4JappTs'],
+        others: {}
+      }
+
+      const data = await ZaloKit.postToWallByApp(feedData)
+      console.log(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   render() {
     return (
-      <SafeAreaView>
+      <SafeAreaView style={{ flex: 1 }}>
+        <StatusBar barStyle={'dark-content'} />
         <ScrollView contentContainerStyle={styles.container}>
           {
             Platform.OS === 'android' && (
@@ -128,6 +222,41 @@ export default class App extends Component<{}> {
               <Text style={styles.buttonText}>Logout</Text>
             </TouchableOpacity>
           </View>
+          <View style={styles.row}>
+            <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={this.getFriendListUsedApp}>
+              <Text style={styles.buttonText}>getFriendListUsedApp</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={this.getFriendListInvitable}>
+              <Text style={styles.buttonText}>getFriendListInvitable</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={this.postToWall}>
+              <Text style={styles.buttonText}>postToWall</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={this.sendMessageToFriend}>
+              <Text style={styles.buttonText}>sendMessageToFriend</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={this.inviteFriendUseApp}>
+              <Text style={styles.buttonText}>inviteFriendUseApp</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={this.sendMessageToFriendByApp}>
+              <Text style={styles.buttonText}>sendMessageToFriendByApp</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={this.postToWallByApp}>
+              <Text style={styles.buttonText}>postToWallByApp</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </SafeAreaView>
     )
@@ -136,7 +265,7 @@ export default class App extends Component<{}> {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10
+    padding: 10,
   },
   welcome: {
     fontSize: 20,

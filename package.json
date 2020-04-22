@@ -1,7 +1,7 @@
 {
   "name": "react-native-zalo-kit",
   "title": "React Native Zalo Kit",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Zalo SDK implementation for React Native",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -19,11 +19,12 @@
   },
   "homepage": "https://github.com/maitrungduc1410/react-native-zalo-kit",
   "keywords": [
-    "react-native",
     "react-native-zalo-kit",
+    "react-native-zalo-sdk",
     "react native zalo",
     "react native zalo login",
-    "react native zalo sdk"
+    "react native zalo sdk",
+    "react native zalo auth"
   ],
   "author": {
     "name": "Mai Trung Duc",

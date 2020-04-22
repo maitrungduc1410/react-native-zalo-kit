@@ -3,6 +3,8 @@
     <img src="./react-native.png" height="150" />
     <img src="./zalo.svg" width="150" height="150" />
   </div>
+  
+  Zalo SDK for React Native
   <div>
   <img src="https://img.shields.io/npm/dw/react-native-zalo-kit" />
 
@@ -12,7 +14,6 @@
 
   <img src="https://img.shields.io/github/stars/maitrungduc1410/react-native-zalo-kit?style=social" />
   </div>
-  Zalo SDK for React Native
 </h1>
 
 <div align="center">
@@ -157,6 +158,10 @@ const login = async () => {
   try {
     const oauthCode = await login(Constants.AUTH_VIA_APP_OR_WEB)
     console.log(oauthCode)
+
+    /*
+      returns: 'some oauthCode'
+    */
   } catch (error) {
     console.log(error)
   }
@@ -175,6 +180,10 @@ const isAuthenticated = async () => {
   try {
     const isAuthenticated = await ZaloKit.isAuthenticated()
     console.log(isAuthenticated)
+
+    /*
+      returns: true | false
+    */
   } catch (error) {
     console.log(error)
   }
@@ -188,6 +197,21 @@ const getUserProfile = async () => {
   try {
     const userProfile = await ZaloKit.getUserProfile()
     console.log(userProfile)
+
+    /*
+      returns: {
+        id: 'user_id_1',
+        name: 'user name',
+        phoneNumber: 'phone number',
+        gender: 'male',
+        birthday: '01/01/2020',
+        picture: {
+          data: {
+            url: 'http://image.example',
+          },
+        }
+      }
+    */
   } catch (error) {
     console.log(error)
   }
@@ -210,6 +234,222 @@ const getApplicationHashKey = async () => {
   try {
     const key = await getApplicationHashKey()
     console.log(key)
+
+    /*
+      returns: 'application hash key'
+    */
+  } catch (error) {
+    console.log(error)
+  }
+}
+```
+## Get friend list used app
+This API is to get friends who have used Zalo app
+```js
+import { getFriendListUsedApp } from 'react-native-zalo-kit'
+
+const getFriendListUsedApp = async () => {
+  try {
+    const position = 0 // position we start from
+    const count = 10 // number of records per page
+    const friends = await getFriendListUsedApp(position, count)
+    console.log(friends)
+
+    /*
+      returns: {
+        data: [
+          {
+            id: 'user_id_1',
+            name: 'user name',
+            phoneNumber: 'phone number',
+            gender: 'male',
+            birthday: '01/01/2020',
+            picture: {
+              data: {
+                url: 'http://image.example',
+              },
+            }
+          }
+        ],
+        paging: {},
+        summary: {
+          total_count: number,
+        }
+      }
+    */
+  } catch (error) {
+    console.log(error)
+  }
+}
+```
+## Get invitable friend list
+This API is to get friends who we can invite to use Zalo app
+```js
+import { getFriendListInvitable } from 'react-native-zalo-kit'
+
+const getFriendListInvitable = async () => {
+  try {
+    const position = 0 // position we start from
+    const count = 10 // number of records per page
+    const friends = await getFriendListInvitable(position, count)
+    console.log(friends)
+
+    /*
+      returns: {
+        data: [
+          {
+            id: 'user_id_1',
+            name: 'user name',
+            phoneNumber: 'phone number',
+            gender: 'male',
+            birthday: '01/01/2020',
+            picture: {
+              data: {
+                url: 'http://image.example',
+              },
+            }
+          }
+        ],
+        paging: {},
+        summary: {
+          total_count: number,
+        }
+      }
+    */
+  } catch (error) {
+    console.log(error)
+  }
+}
+```
+## Post to user's feed
+```js
+import { postToWall } from 'react-native-zalo-kit'
+
+const postToWall = async () => {
+  try {
+    const link = 'https://zing.vn'
+    const message = 'Hello World'
+    const data = await postToWall(link, message)
+    console.log(data)
+    
+    /*
+      returns: {
+        id: 'post_id'
+      }
+    */
+  } catch (error) {
+    console.log(error.message)
+  }
+}
+```
+## Send message to friend
+```js
+import { sendMessageToFriend } from 'react-native-zalo-kit'
+
+const sendMessageToFriend = async () => {
+  try {
+    const friendId = 'friend_ID'
+    const link = 'https://zing.vn'
+    const message = 'Hello World'
+    const data = await sendMessageToFriend(friendId, link, message)
+    console.log(data)
+
+    /*
+      returns: {
+        to: 'friend_ID'
+      }
+    */
+  } catch (error) {
+    console.log(error)
+  }
+}
+```
+## Invite friend to use Zalo app
+```js
+import { inviteFriendUseApp } from 'react-native-zalo-kit'
+
+const inviteFriendUseApp = async () => {
+  try {
+    const friendIds = ['friend_ID1', 'friend_ID2']
+    const message = 'Hello World'
+    const data = await inviteFriendUseApp(friendIds, message)
+    console.log(data)
+
+    /*
+      returns: {
+        to: [
+          'friend_ID1', 'friend_ID2'
+        ]
+      }
+    */
+  } catch (error) {
+    console.log(error)
+  }
+}
+```
+## Share link to friend
+This API is to share a link to a friend by sending a message which contains the link
+```js
+import { sendMessageToFriendByApp } from 'react-native-zalo-kit'
+
+const sendMessageToFriendByApp = async () => {
+  try {
+    const feedData = {
+      appName: 'DEMO RN APP',
+      message: 'Hello World',
+      link: 'https://zing.vn',
+      linkTitle: 'LINK TITLE',
+      linkSource: 'LINK SOURCE',
+      linkDesc: 'LINK DESC',
+      linkThumb: ['https://lh3.googleusercontent.com/dr8A58cYr-Mnz6mi5QCe6_I2yaCICVV0jL7fjrzWixn89HiA4BGW-KraR7yU4JappTs'],
+      others: {}
+    }
+
+    const data = await sendMessageToFriendByApp(feedData)
+    console.log(data)
+
+    /*
+      returns: {
+        success: true,
+        data: "<raw message>",
+        message: "format message",
+        sendAction: 0 or 1 (0: sent, 1: cancelled)
+      }
+    */
+  } catch (error) {
+    console.log(error)
+  }
+}
+```
+## Share link to feed
+This API is to share a link to user's feed
+```js
+import { postToWallByApp } from 'react-native-zalo-kit'
+
+const postToWallByApp = async () => {
+  try {
+    const feedData = {
+      appName: 'DEMO RN APP',
+      message: 'Hello World',
+      link: 'https://zing.vn',
+      linkTitle: 'LINK TITLE',
+      linkSource: 'LINK SOURCE',
+      linkDesc: 'LINK DESC',
+      linkThumb: ['https://lh3.googleusercontent.com/dr8A58cYr-Mnz6mi5QCe6_I2yaCICVV0jL7fjrzWixn89HiA4BGW-KraR7yU4JappTs'],
+      others: {}
+    }
+
+    const data = await postToWallByApp(feedData)
+    console.log(data)
+
+    /*
+      returns: {
+        success: true,
+        data: "<raw message>",
+        message: "format message",
+        sendAction: 0 or 1 (0: sent, 1: cancelled)
+      }
+    */
   } catch (error) {
     console.log(error)
   }

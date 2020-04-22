@@ -1,4 +1,6 @@
-import { NativeModules } from 'react-native'
+import {
+  NativeModules,
+} from 'react-native'
 
 const { ZaloKit } = NativeModules
 
@@ -19,4 +21,19 @@ export interface IUserProfile {
       url: string,
     },
   }
+}
+
+export interface IFriendList {
+  data: IUserProfile[],
+  paging: {},
+  summary: {
+    total_count: number,
+  }
+}
+
+export interface IShareResponseObject {
+  success: boolean,
+  data: string,
+  message: string,
+  sendAction: 0 | 1,
 }
