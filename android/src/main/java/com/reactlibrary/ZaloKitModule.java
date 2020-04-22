@@ -237,6 +237,14 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
             thumbsParsed[i] = thumbs.getString(i);
         }
 
+        Map<String, Object> others = feedData.getMap("others").toHashMap();
+        Map<String,String> othersParsed =new HashMap<String,String>();
+        for (Map.Entry<String, Object> entry : others.entrySet()) {
+            if(entry.getValue() instanceof String){
+                othersParsed.put(entry.getKey(), (String) entry.getValue());
+            }
+        }
+
         final FeedData feed = new FeedData();
         feed.setAppName(feedData.getString("appName"));
         feed.setMsg(feedData.getString("message"));
@@ -245,7 +253,7 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
         feed.setLinkSource(feedData.getString("linkSource"));
         feed.setLinkDesc(feedData.getString("linkDesc"));
         feed.setLinkThumb(thumbsParsed);
-//        feed.setParams(feedData.getMap("others"));
+        feed.setParams(othersParsed);
 
         runOnUiThread(new Runnable() {
             @Override
@@ -278,6 +286,14 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
             thumbsParsed[i] = thumbs.getString(i);
         }
 
+        Map<String, Object> others = feedData.getMap("others").toHashMap();
+        Map<String,String> othersParsed =new HashMap<String,String>();
+        for (Map.Entry<String, Object> entry : others.entrySet()) {
+            if(entry.getValue() instanceof String){
+                othersParsed.put(entry.getKey(), (String) entry.getValue());
+            }
+        }
+
         final FeedData feed = new FeedData();
         feed.setAppName(feedData.getString("appName"));
         feed.setMsg(feedData.getString("message"));
@@ -286,7 +302,7 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
         feed.setLinkSource(feedData.getString("linkSource"));
         feed.setLinkDesc(feedData.getString("linkDesc"));
         feed.setLinkThumb(thumbsParsed);
-//        feed.setParams(feedData.getMap("others"));
+        feed.setParams(othersParsed);
 
         runOnUiThread(new Runnable() {
             @Override

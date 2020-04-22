@@ -8,6 +8,7 @@ import {
   IFriendList,
   IShareResponseObject,
 } from './types'
+import { checkProps } from './helpers'
 
 const { ZaloKit } = NativeModules
 
@@ -15,8 +16,15 @@ const login = async (
   authType = Constants.AUTH_VIA_APP_OR_WEB,
 ): Promise<boolean> => {
   try {
-    const oauthCode = await ZaloKit.login(authType)
+    const AUTH_TYPES = [Constants.AUTH_VIA_APP, Constants.AUTH_VIA_APP_OR_WEB, Constants.AUTH_VIA_WEB]
+    const AUTH_TYPE_KEYS = AUTH_TYPES.map((key) => {
+        return Constants[key]
+    })
+    if (!AUTH_TYPES.includes(authType)) {
+        throw new Error(`"authType" must be one of [${AUTH_TYPE_KEYS.join(', ')}]`)
+    }
 
+    const oauthCode = await ZaloKit.login(authType)
     return oauthCode
   } catch (error) {
     throw error
@@ -42,32 +50,156 @@ const getApplicationHashKey = async (): Promise<string> => {
   }
 }
 
-const getFriendListUsedApp: (
+const getFriendListUsedApp = async (
   position: number,
   count: number,
-) => Promise<IFriendList> = ZaloKit.getFriendListUsedApp
+): Promise<IFriendList> => {
+  try {
+    const source = {
+      position,
+      count,
+    }
 
-const getFriendListInvitable: (
+    const requiredProps = [
+      {
+        key: 'position',
+        type: 'number',
+      },
+      {
+        key: 'count',
+        type: 'number',
+      },
+    ]
+
+    checkProps(source, requiredProps)
+
+    const data = await ZaloKit.getFriendListUsedApp(position, count)
+    return data
+  } catch (error) {
+    throw error
+  }
+}
+
+const getFriendListInvitable = async (
   position: number,
   count: number,
-) => Promise<IFriendList> = ZaloKit.getFriendListInvitable
+): Promise<IFriendList> => {
+  try {
+    const source = {
+      position,
+      count,
+    }
 
-const postToWall: (
+    const requiredProps = [
+      {
+        key: 'position',
+        type: 'number',
+      },
+      {
+        key: 'count',
+        type: 'number',
+      },
+    ]
+
+    checkProps(source, requiredProps)
+
+    const data = await ZaloKit.getFriendListInvitable(position, count)
+    return data
+  } catch (error) {
+    throw error
+  }
+}
+
+const postToWall = async (
   link: string,
   message: string,
-) => Promise<{ id: string }> = ZaloKit.postToWall
+): Promise<{ id: string }> => {
+  try {
+    const source = {
+      link,
+      message,
+    }
 
-const sendMessageToFriend: (
+    const requiredProps = [
+      {
+        key: 'link',
+        type: 'string',
+      },
+      {
+        key: 'message',
+        type: 'string',
+      },
+    ]
+
+    checkProps(source, requiredProps)
+
+    const data = await ZaloKit.postToWall(link, message)
+    return data
+  } catch (error) {
+    throw error
+  }
+}
+
+const sendMessageToFriend = async (
   friendId: string,
   link: string,
   message: string,
-) => Promise<{ to: string }> = ZaloKit.sendMessageToFriend
+): Promise<{ to: string }> => {
+  try {
+    const source = {
+      friendId,
+      link,
+      message,
+    }
+
+    const requiredProps = [
+      {
+        key: 'friendId',
+        type: 'string',
+      },
+      {
+        key: 'link',
+        type: 'string',
+      },
+      {
+        key: 'message',
+        type: 'string',
+      },
+    ]
+
+    checkProps(source, requiredProps)
+
+    const data = await ZaloKit.sendMessageToFriend(friendId, link, message)
+
+    return data
+  } catch (error) {
+    throw error
+  }
+}
 
 const inviteFriendUseApp = async (
   friendIds: string[],
   message: string,
 ): Promise<{ to: string[] }> => {
   try {
+    const source = {
+      friendIds,
+      message,
+    }
+
+    const requiredProps = [
+      {
+        key: 'friendIds',
+        type: 'array',
+      },
+      {
+        key: 'message',
+        type: 'string',
+      },
+    ]
+
+    checkProps(source, requiredProps)
+
     let response
     if (Platform.OS === 'android') {
       response = await ZaloKit.inviteFriendUseApp(friendIds, message)
@@ -81,7 +213,7 @@ const inviteFriendUseApp = async (
   }
 }
 
-const sendMessageToFriendByApp: (
+const sendMessageToFriendByApp = async (
   feedData: {
     appName: string,
     message: string,
@@ -92,9 +224,54 @@ const sendMessageToFriendByApp: (
     linkThumb: string[],
     others: object,
   },
-) => Promise<IShareResponseObject> = ZaloKit.sendMessageToFriendByApp
+): Promise<IShareResponseObject> => {
+  try {
+    const requiredProps = [
+      {
+        key: 'appName',
+        type: 'string',
+      },
+      {
+        key: 'message',
+        type: 'string',
+      },
+      {
+        key: 'link',
+        type: 'string',
+      },
+      {
+        key: 'linkTitle',
+        type: 'string',
+      },
+      {
+        key: 'linkSource',
+        type: 'string',
+      },
+      {
+        key: 'linkDesc',
+        type: 'string',
+      },
+      {
+        key: 'linkThumb',
+        type: 'array',
+      },
+      {
+        key: 'others',
+        type: 'object',
+      },
+    ]
 
-const postToWallByApp: (
+    checkProps(feedData, requiredProps)
+
+    const data = await ZaloKit.sendMessageToFriendByApp(feedData)
+
+    return data
+  } catch (error) {
+    throw error
+  }
+}
+
+const postToWallByApp = async (
   feedData: {
     appName: string,
     message: string,
@@ -105,7 +282,52 @@ const postToWallByApp: (
     linkThumb: string[],
     others: object,
   },
-) => Promise<IShareResponseObject> = ZaloKit.postToWallByApp
+): Promise<IShareResponseObject> => {
+  try {
+    const requiredProps = [
+      {
+        key: 'appName',
+        type: 'string',
+      },
+      {
+        key: 'message',
+        type: 'string',
+      },
+      {
+        key: 'link',
+        type: 'string',
+      },
+      {
+        key: 'linkTitle',
+        type: 'string',
+      },
+      {
+        key: 'linkSource',
+        type: 'string',
+      },
+      {
+        key: 'linkDesc',
+        type: 'string',
+      },
+      {
+        key: 'linkThumb',
+        type: 'array',
+      },
+      {
+        key: 'others',
+        type: 'object',
+      },
+    ]
+
+    checkProps(feedData, requiredProps)
+
+    const data = await ZaloKit.postToWallByApp(feedData)
+
+    return data
+  } catch (error) {
+    throw error
+  }
+}
 
 export {
   login,
