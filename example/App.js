@@ -1,5 +1,15 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Image, StyleSheet, Text, View, TouchableOpacity, ScrollView, StatusBar } from 'react-native'
+import {
+  Platform, 
+  SafeAreaView, 
+  Image, 
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  ScrollView, 
+  StatusBar,
+} from 'react-native'
 import ZaloKit from 'react-native-zalo-kit'
 
 export default class App extends Component {

@@ -75,6 +75,7 @@ buildscript {
 2. Open `android/app/src/main/java/<your_app_package>/MainActivity.java`, and add the following:
 ```java
 import com.zing.zalo.zalosdk.oauth.ZaloSDK;
+import android.content.Intent;
 
 public class MainActivity extends ReactActivity {
   ...
