@@ -112,7 +112,7 @@ public class MainApplication extends Application implements ReactApplication {
 </res>
 ```
 
-5. Add the following to:
+5. Add the following to `android/app/src/main/AndroidManifest.xml` :
 ```xml
 <application>
 
