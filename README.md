@@ -21,6 +21,16 @@
   <img src="./demo_ios.gif" />
 </div>
 
+# Table of Contents
+1. [Installation](#Installation)
+2. [Setup](#Setup)
+    1. [Create Zalo Application](#Create-Zalo-Application)
+    2. [iOS setup](#ios)
+    3. [Android setup](#android)
+3. [Usage](#usage)
+4. [Troubleshooting](#troubleshooting)
+5. [Demo](#demo)
+
 # Installation
 With npm:
 `$ npm install react-native-zalo-kit --save`
@@ -171,7 +181,7 @@ const login = async () => {
 
 `login` supports the following methods:
 - `AUTH_VIA_APP_OR_WEB`: login via app or web. If user has Zalo app then login with app, otherwise using web
-- `AUTH_VIA_APP`: login using Zalo app only,
+- `AUTH_VIA_APP`: login using Zalo app only
 - `AUTH_VIA_APP_OR_WEB`: login using Zalo web only
 ## Check if authenticated
 ```js
@@ -462,3 +472,7 @@ const postToWallByApp = async () => {
 This error happens because of your configuration on [Zalo Developer Portal](https://developers.zalo.me/) for Android is not correct, review your setup and make sure they're correct:
 - Check your package name
 - Check your Application Hash Key: you can use the function [getApplicationHashKey](#get-application-hash-key-android-only) to check the key of your app.
+# Demo
+A full working demo is located at [example folder](./example/App.js)
+
+If you like this project, encourage me by giving me a ⭐️. Happy hacking
