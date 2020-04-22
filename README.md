@@ -143,7 +143,7 @@ import ZaloKit from 'react-native-zalo-kit'
 ZaloKit.login()
 ...
 ```
-Or you can just import the module you need like:
+Or you can just import modules you need like:
 ```js
 import { login } from 'react-native-zalo-kit'
 
@@ -178,7 +178,7 @@ import { isAuthenticated } from 'react-native-zalo-kit'
 
 const isAuthenticated = async () => {
   try {
-    const isAuthenticated = await ZaloKit.isAuthenticated()
+    const isAuthenticated = await isAuthenticated()
     console.log(isAuthenticated)
 
     /*
@@ -195,7 +195,7 @@ import { getUserProfile } from 'react-native-zalo-kit'
 
 const getUserProfile = async () => {
   try {
-    const userProfile = await ZaloKit.getUserProfile()
+    const userProfile = await getUserProfile()
     console.log(userProfile)
 
     /*
