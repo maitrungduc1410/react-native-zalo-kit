@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { SafeAreaView, Image, StyleSheet, Text, View, TouchableOpacity, ScrollView, StatusBar } from 'react-native'
-// import ZaloKit from 'react-native-zalo-kit'
-import ZaloKit, { Constants } from './lib'
+import ZaloKit from 'react-native-zalo-kit'
 
 export default class App extends Component {
   constructor(props) {
@@ -15,8 +14,6 @@ export default class App extends Component {
   }
 
   async componentDidMount() {
-    console.log(Constants)
-    console.log(typeof Constants)
     if (Platform.OS === 'android') {
       const key = await ZaloKit.getApplicationHashKey()
 
