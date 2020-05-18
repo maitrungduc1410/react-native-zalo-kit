@@ -46,6 +46,8 @@ First of all you need to create Zalo application on [Zalo Developer Portal](http
 
 After that you'll get your Zalo App Key, and you'll need to use it for next sections
 
+**Note**: you're recommended to turn your Zalo app to `Live Mode` in order to get full functionalities.
+
 ## iOS
 Run the following command to setup for iOS:
 ```
