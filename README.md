@@ -184,7 +184,7 @@ const login = async () => {
 `login` supports the following methods:
 - `AUTH_VIA_APP_OR_WEB`: login via app or web. If user has Zalo app then login with app, otherwise using web
 - `AUTH_VIA_APP`: login using Zalo app only
-- `AUTH_VIA_APP_OR_WEB`: login using Zalo web only
+- `AUTH_VIA_WEB`: login using Zalo web only
 ## Check if authenticated
 ```js
 import { isAuthenticated } from 'react-native-zalo-kit'
