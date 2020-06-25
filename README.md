@@ -46,7 +46,9 @@ First of all you need to create Zalo application on [Zalo Developer Portal](http
 
 After that you'll get your Zalo App Key, and you'll need to use it for next sections
 
-**Note**: you're recommended to turn your Zalo app to `Live Mode` in order to get full functionalities.
+**Note 1**: you're recommended to turn your Zalo app to `Live Mode` in order to get full functionalities.
+
+**Note 2**: you only need `BundleID` when setting up with iOS on Zalo Developer Portal. For getting Android app Hash Key, see function `getApplicationHashKey` below
 
 ## iOS
 Run the following command to setup for iOS:
