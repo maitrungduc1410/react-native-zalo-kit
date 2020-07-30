@@ -46,7 +46,9 @@ First of all you need to create Zalo application on [Zalo Developer Portal](http
 
 After that you'll get your Zalo App Key, and you'll need to use it for next sections
 
-**Note**: you're recommended to turn your Zalo app to `Live Mode` in order to get full functionalities.
+**Note 1**: you're recommended to turn your Zalo app to `Live Mode` in order to get full functionalities.
+
+**Note 2**: you only need `BundleID` when setting up with iOS on Zalo Developer Portal. For getting Android app Hash Key, see function `getApplicationHashKey` below
 
 ## iOS
 Run the following command to setup for iOS:
@@ -184,7 +186,7 @@ const login = async () => {
 `login` supports the following methods:
 - `AUTH_VIA_APP_OR_WEB`: login via app or web. If user has Zalo app then login with app, otherwise using web
 - `AUTH_VIA_APP`: login using Zalo app only
-- `AUTH_VIA_APP_OR_WEB`: login using Zalo web only
+- `AUTH_VIA_WEB`: login using Zalo web only
 ## Check if authenticated
 ```js
 import { isAuthenticated } from 'react-native-zalo-kit'
