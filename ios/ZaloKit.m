@@ -325,7 +325,7 @@ RCT_REMAP_METHOD(postToWallByApp,
                 NSDictionary *result = @{
                     @"success": @(response.success),
                     @"data": response.result_data,
-                    @"message": response.message,
+                    @"message": response.message ? response.message : @"Successfully posted",
                     @"sendAction": syncSendAction
                 };
                 
