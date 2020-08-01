@@ -76,6 +76,9 @@ After that, open `ios/<your_app_name>/AppDelegate.m`, and add the following:
 ```
 
 Next, Open your app in Xcode (you have to use `.xcworkspace` file) -> Select your project under Targets -> select tab Info -> URL Types -> Click `+` to add new with identifier `zalo` and URL Schemes is `zalo-your_app_id`
+
+<img src="./url_type.png" />
+
 ## Android
 1. Open `android/build.gradle`, and change the `minSdkVersion` to 18:
 ```
