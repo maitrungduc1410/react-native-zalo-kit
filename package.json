@@ -1,7 +1,7 @@
 {
   "name": "react-native-zalo-kit",
   "title": "React Native Zalo Kit",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Zalo SDK implementation for React Native",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

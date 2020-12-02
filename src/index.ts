@@ -14,7 +14,7 @@ const { ZaloKit } = NativeModules
 
 const login = async (
   authType = Constants.AUTH_VIA_APP_OR_WEB,
-): Promise<boolean> => {
+): Promise<string> => {
   try {
     const AUTH_TYPES = [Constants.AUTH_VIA_APP, Constants.AUTH_VIA_APP_OR_WEB, Constants.AUTH_VIA_WEB]
     const AUTH_TYPE_KEYS = AUTH_TYPES.map((key) => {
