@@ -1,5 +1,3 @@
-Note setup BundleID cho android và ios
-
 <h1 align="center">
   <div>
     <img src="./images/react-native.png" height="150" />
