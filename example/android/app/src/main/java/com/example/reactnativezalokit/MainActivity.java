@@ -1,6 +1,9 @@
 package com.example.reactnativezalokit;
 
+import android.content.Intent;
+
 import com.facebook.react.ReactActivity;
+import com.zing.zalo.zalosdk.oauth.ZaloSDK;
 
 public class MainActivity extends ReactActivity {
 
@@ -11,5 +14,11 @@ public class MainActivity extends ReactActivity {
   @Override
   protected String getMainComponentName() {
     return "ZaloKitExample";
+  }
+
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    ZaloSDK.Instance.onActivityResult(this, requestCode, resultCode, data);
   }
 }
