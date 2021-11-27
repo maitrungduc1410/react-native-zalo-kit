@@ -525,6 +525,9 @@ Make sure that you have request for all permissions needed from Zalo Developer p
 <img src="./images/permission.png" />
 
 > Approval process is easy, so just request for everything :)
+
+3. "The application is not approved"
+Check that your configuration on Zalo Developer Portal is correct: Bundle/Package ID, app hash key, request for permissions, app ID is correct,...
 # Demo
 To run the demo project, run the following commands:
 ```sh
