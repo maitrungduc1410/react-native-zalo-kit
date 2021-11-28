@@ -19,13 +19,13 @@ class ZaloKit: NSObject {
     @objc(login:withResolver:withRejecter:)
     func login(authType: String, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
         var type = ZAZAloSDKAuthenTypeViaZaloAppAndWebView
-
+        
         if (authType == AUTH_VIA_WEB) {
             type = ZAZaloSDKAuthenTypeViaWebViewOnly
         } else if (authType == AUTH_VIA_APP) {
             type = ZAZaloSDKAuthenTypeViaZaloAppOnly
         }
-
+        
         DispatchQueue.main.async {
             let presentedViewController = RCTPresentedViewController()
             ZaloSDK.sharedInstance().authenticateZalo(with: type, parentController: presentedViewController, handler: {(response) in
@@ -49,7 +49,7 @@ class ZaloKit: NSObject {
     func logout() -> Void {
         ZaloSDK.sharedInstance().unauthenticate()
     }
-        
+    
     @objc(isAuthenticated:withRejecter:)
     func isAuthenticated(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
         DispatchQueue.main.async {
@@ -244,39 +244,39 @@ class ZaloKit: NSObject {
     
     // ====== iOS only methods ======
     
-//    @objc(sendOfficialAccountMessage:withTemplateData:withMessage:withResolver:withRejecter:)
-//    func sendOfficialAccountMessage(templateId: String, templateData: NSDictionary, message: String, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
-//        DispatchQueue.main.async {
-//            ZaloSDK.sharedInstance().sendOfficalAccountMessage(with: templateId, templateData: templateData as? [AnyHashable : Any], callback: {(response) in
-//                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
-//                    resolve(response!.data)
-//                } else {
-//                    let errorCode = response?.errorCode ?? 422
-//                    let error = NSError(domain: "OpenAPI error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: response?.errorMessage ?? ""])
-//                    reject(String(errorCode), response?.errorMessage, error)
-//                }
-//            })
-//        }
-//    }
-//    
-//    @objc(loginWithFacebook:withRejecter:)
-//    func loginWithFacebook(resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
-//        DispatchQueue.main.async {
-//            let presentedViewController = RCTPresentedViewController()
-//            ZaloSDK.sharedInstance().authenticateFacebook(in: presentedViewController, withCompletionHandler: {(response) in
-//                let errorCode = response?.errorCode ?? 401
-//                if (response != nil && response!.isSucess) {
-//                    let result: NSDictionary = [
-//                        "oauthCode": response?.oauthCode ?? "",
-//                        "userId": response?.userId ?? "",
-//                        "socialId": response?.socialId ?? ""
-//                    ]
-//                    resolve(result)
-//                } else if (errorCode != kZaloSDKErrorCodeUserCancel.rawValue) {
-//                    let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: response?.errorMessage ?? ""])
-//                    reject(String(errorCode), response?.errorMessage, error)
-//                }
-//            })
-//        }
-//    }
+    //    @objc(sendOfficialAccountMessage:withTemplateData:withMessage:withResolver:withRejecter:)
+    //    func sendOfficialAccountMessage(templateId: String, templateData: NSDictionary, message: String, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
+    //        DispatchQueue.main.async {
+    //            ZaloSDK.sharedInstance().sendOfficalAccountMessage(with: templateId, templateData: templateData as? [AnyHashable : Any], callback: {(response) in
+    //                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+    //                    resolve(response!.data)
+    //                } else {
+    //                    let errorCode = response?.errorCode ?? 422
+    //                    let error = NSError(domain: "OpenAPI error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: response?.errorMessage ?? ""])
+    //                    reject(String(errorCode), response?.errorMessage, error)
+    //                }
+    //            })
+    //        }
+    //    }
+    //
+    //    @objc(loginWithFacebook:withRejecter:)
+    //    func loginWithFacebook(resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
+    //        DispatchQueue.main.async {
+    //            let presentedViewController = RCTPresentedViewController()
+    //            ZaloSDK.sharedInstance().authenticateFacebook(in: presentedViewController, withCompletionHandler: {(response) in
+    //                let errorCode = response?.errorCode ?? 401
+    //                if (response != nil && response!.isSucess) {
+    //                    let result: NSDictionary = [
+    //                        "oauthCode": response?.oauthCode ?? "",
+    //                        "userId": response?.userId ?? "",
+    //                        "socialId": response?.socialId ?? ""
+    //                    ]
+    //                    resolve(result)
+    //                } else if (errorCode != kZaloSDKErrorCodeUserCancel.rawValue) {
+    //                    let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: response?.errorMessage ?? ""])
+    //                    reject(String(errorCode), response?.errorMessage, error)
+    //                }
+    //            })
+    //        }
+    //    }
 }

@@ -32,9 +32,12 @@
     "bootstrap": "yarn example && yarn && yarn pods"
   },
   "keywords": [
-    "react-native",
-    "ios",
-    "android"
+    "react-native-zalo-kit",
+    "react-native-zalo-sdk",
+    "react native zalo",
+    "react native zalo login",
+    "react native zalo sdk",
+    "react native zalo auth"
   ],
   "repository": "https://github.com/maitrungduc1410/react-native-zalo-kit",
   "author": "Mai Trung Duc <maitrungduc1410@gmail.com> (https://github.com/maitrungduc1410)",
