@@ -534,9 +534,6 @@ To run the demo project, run the following commands:
 # from root folder
 yarn
 
-# inside example/ios
-pod install
-
 # from root folder
 yarn example android
 
