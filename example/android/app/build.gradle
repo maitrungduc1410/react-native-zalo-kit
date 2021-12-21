@@ -182,10 +182,6 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation "me.zalo:sdk-core:2.6.0428"
-    implementation "me.zalo:sdk-auth:2.6.0428"
-    implementation "me.zalo:sdk-openapi:2.6.0428"
-
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 //    debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
