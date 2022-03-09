@@ -2,6 +2,9 @@ package com.reactnativezalokit;
 
 import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
@@ -19,12 +22,31 @@ import com.zing.zalo.zalosdk.oauth.OauthResponse;
 import com.zing.zalo.zalosdk.oauth.OpenAPIService;
 import com.zing.zalo.zalosdk.oauth.ZaloSDK;
 import com.zing.zalo.zalosdk.oauth.FeedData;
+import com.zing.zalo.zalosdk.oauth.model.ErrorResponse;
 
 import org.json.JSONException;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+class OAuthAccessTokenCompleteListener {
+  public OAuthAccessTokenCompleteListener() {
+  }
+
+  public void onSuccess(WritableMap map) {
+  }
+}
+
+class TokenData {
+  String accessToken;
+  String refreshToken;
+  public TokenData(String accessToken, String refreshToken) {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+  }
+}
 
 @ReactModule(name = ZaloKitModule.NAME)
 public class ZaloKitModule extends ReactContextBaseJavaModule {
@@ -33,6 +55,8 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
   private static final String AUTH_VIA_WEB = "web";
   private static final String AUTH_VIA_APP = "app";
   private static final String AUTH_VIA_APP_OR_WEB = "app_or_web";
+  private static final String ZaloKitAccessToken = "__RN_ZALO_KIT_ACCESS_TOKEN__";
+  private static final String ZaloKitRefreshToken = "__RN_ZALO_KIT_REFRESH_TOKEN__";
 
   public ZaloKitModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -64,6 +88,49 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
     }
   }
 
+  private void saveTokenToCache(String accessToken, String refreshToken) {
+    SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(reactContext.getCurrentActivity());
+    SharedPreferences.Editor myEditor = myPreferences.edit();
+    myEditor.putString(ZaloKitAccessToken, accessToken);
+    myEditor.putString(ZaloKitRefreshToken, refreshToken);
+    myEditor.apply();
+  }
+
+  private void clearTokenFromCache() {
+    SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(reactContext.getCurrentActivity());
+    SharedPreferences.Editor myEditor = myPreferences.edit();
+    myEditor.remove(ZaloKitAccessToken);
+    myEditor.remove(ZaloKitRefreshToken);
+    myEditor.apply();
+  }
+
+  private TokenData getTokenFromCache() {
+    SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(reactContext.getCurrentActivity());
+
+    return new TokenData(myPreferences.getString(ZaloKitAccessToken, ""), myPreferences.getString(ZaloKitRefreshToken, ""));
+  }
+
+  private void getAccessToken(String oauthCode, String codeVerifier, OAuthAccessTokenCompleteListener listener) {
+    Thread thread = new Thread(() -> {
+      try  {
+        ZaloSDK.Instance.getAccessTokenByOAuthCode(reactContext.getCurrentActivity(),oauthCode, codeVerifier, data -> {
+          int err = data.optInt("error");
+          if (err == 0) {
+            WritableMap map = Arguments.createMap();
+            map.putString("accessToken", data.optString("access_token"));
+            map.putString("refreshToken", data.optString("refresh_token"));
+
+            listener.onSuccess(map);
+          }
+        });
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
+
+    thread.start();
+  }
+
   @ReactMethod
   public void login(String authType, final Promise promise) {
     LoginVia type = LoginVia.APP_OR_WEB;
@@ -71,20 +138,29 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
     if (authType.equals(AUTH_VIA_WEB)) type = LoginVia.WEB;
     else if (authType.equals(AUTH_VIA_APP)) type = LoginVia.APP;
 
-    ZaloSDK.Instance.authenticate(reactContext.getCurrentActivity(), type, new OAuthCompleteListener() {
+    String codeVerifier = Util.generateCodeVerifier();
+    String codeChallenge = null;
+    try {
+      codeChallenge = Util.generateCodeChallenge(codeVerifier);
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+    }
+
+    ZaloSDK.Instance.authenticateZaloWithAuthenType(reactContext.getCurrentActivity(), type, codeChallenge, new OAuthCompleteListener() {
       @Override
-      public void onAuthenError(int errorCode, String message) {
-        promise.reject(errorCode + "", message);
+      public void onAuthenError(ErrorResponse errorResponse) {
+        promise.reject(errorResponse.getErrorCode() + "", errorResponse.getErrorMsg());
       }
 
       @Override
       public void onGetOAuthComplete(OauthResponse response) {
-        final WritableMap data = Arguments.createMap();
-        data.putString("oauthCode", response.getOauthCode());
-        data.putDouble("userId", response.getuId());
-        data.putString("socialId", response.getSocialId());
-
-        promise.resolve(data);
+        ZaloKitModule.this.getAccessToken(response.getOauthCode(), codeVerifier, new OAuthAccessTokenCompleteListener() {
+          @Override
+          public void onSuccess(WritableMap map) {
+            ZaloKitModule.this.saveTokenToCache(map.getString("accessToken"), map.getString("refreshToken"));
+            promise.resolve(map);
+          }
+        });
       }
     });
   }
@@ -92,23 +168,31 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void logout() {
     ZaloSDK.Instance.unauthenticate();
+    ZaloKitModule.this.clearTokenFromCache();
   }
 
   @ReactMethod
   public void isAuthenticated(final Promise promise) {
-    ZaloSDK.Instance.isAuthenticate((validated, errorCode, userId, oauthCode) -> {
-      if (validated) promise.resolve(true);
-      else promise.reject("Error", "Have not login yet");
+    TokenData tokenData = this.getTokenFromCache();
+    ZaloSDK.Instance.isAuthenticate(tokenData.refreshToken, (validated, errorCode, oauthResponse) -> {
+      if (validated) {
+        promise.resolve(true);
+      } else {
+        promise.reject("Error", "Have not login yet");
+      }
     });
   }
 
   @ReactMethod
   public void getUserProfile(final Promise promise) {
+    TokenData tokenData = this.getTokenFromCache();
+
     final String[] fields = {"id", "birthday", "gender", "picture", "name"};
-    ZaloSDK.Instance.getProfile(reactContext.getCurrentActivity(), response -> {
+    ZaloSDK.Instance.getProfile(reactContext.getCurrentActivity(), tokenData.accessToken, response -> {
       try {
         final WritableMap data = Util.convertJsonToMap(response);
-        if (data.hasKey("error")) {
+        System.out.println(data);
+        if (data.hasKey("error") && data.getInt("error") != 0) {
           promise.reject(String.valueOf(data.getInt("error")), data.getString("message"));
         } else promise.resolve(data);
       } catch (JSONException e) {
@@ -119,11 +203,13 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getUserFriendList(int position, int count, final Promise promise) {
+    TokenData tokenData = this.getTokenFromCache();
+
     final String[] fields = {"id", "birthday", "gender", "picture", "name"};
-    ZaloSDK.Instance.getFriendListUsedApp(reactContext.getCurrentActivity(), position, count, response -> {
+    ZaloSDK.Instance.getFriendListUsedApp(reactContext.getCurrentActivity(), tokenData.accessToken, position, count, response -> {
       try {
         final WritableMap data = Util.convertJsonToMap(response);
-        if (data.hasKey("error")) {
+        if (data.hasKey("error") && data.getInt("error") != 0) {
           promise.reject(String.valueOf(data.getInt("error")), data.getString("message"));
         } else promise.resolve(data);
       } catch (JSONException e) {
@@ -134,11 +220,13 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getUserInvitableFriendList(int offset, int count, final Promise promise) {
+    TokenData tokenData = this.getTokenFromCache();
+
     final String[] fields = {"id", "birthday", "gender", "picture", "name"};
-    ZaloSDK.Instance.getFriendListInvitable(reactContext.getCurrentActivity(), offset, count, response -> {
+    ZaloSDK.Instance.getFriendListInvitable(reactContext.getCurrentActivity(), tokenData.accessToken, offset, count, response -> {
       try {
         final WritableMap data = Util.convertJsonToMap(response);
-        if (data.hasKey("error")) {
+        if (data.hasKey("error") && data.getInt("error") != 0) {
           promise.reject(String.valueOf(data.getInt("error")), data.getString("message"));
         } else promise.resolve(data);
       } catch (JSONException e) {
@@ -149,10 +237,12 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void postFeed(String message, String link, final Promise promise) {
-    OpenAPIService.getInstance().postToWall(reactContext.getCurrentActivity(), link, message, response -> {
+    TokenData tokenData = this.getTokenFromCache();
+
+    OpenAPIService.getInstance().postToWall(reactContext.getCurrentActivity(), tokenData.accessToken, link, message, response -> {
       try {
         final WritableMap data = Util.convertJsonToMap(response);
-        if (data.hasKey("error")) {
+        if (data.hasKey("error") && data.getInt("error") != 0) {
           promise.reject(String.valueOf(data.getInt("error")), data.getString("message"));
         } else promise.resolve(data);
       } catch (JSONException e) {
@@ -201,10 +291,12 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void sendMessage(String friendId, String message, String link, final Promise promise) {
-    OpenAPIService.getInstance().sendMsgToFriend(reactContext.getCurrentActivity(), friendId, link, message, response -> {
+    TokenData tokenData = this.getTokenFromCache();
+
+    OpenAPIService.getInstance().sendMsgToFriend(reactContext.getCurrentActivity(), tokenData.accessToken, friendId, link, message, response -> {
       try {
         final WritableMap data = Util.convertJsonToMap(response);
-        if (data.hasKey("error")) {
+        if (data.hasKey("error") && data.getInt("error") != 0) {
           promise.reject(String.valueOf(data.getInt("error")), data.getString("message"));
         } else promise.resolve(data);
       } catch (JSONException e) {
@@ -253,16 +345,18 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void inviteFriendUseApp(ReadableArray friendIds, String message, final Promise promise) {
+    TokenData tokenData = this.getTokenFromCache();
+
     String[] Ids = new String[friendIds.size()];
 
     for (int i = 0; i < friendIds.size(); i++) {
       Ids[i] = friendIds.getString(i);
     }
 
-    ZaloSDK.Instance.inviteFriendUseApp(reactContext.getCurrentActivity(), Ids, message, response -> {
+    ZaloSDK.Instance.inviteFriendUseApp(reactContext.getCurrentActivity(), tokenData.accessToken, Ids, message, response -> {
       try {
         final WritableMap data = Util.convertJsonToMap(response);
-        if (data.hasKey("error")) {
+        if (data.hasKey("error") && data.getInt("error") != 0) {
           promise.reject(String.valueOf(data.getInt("error")), data.getString("message"));
         } else promise.resolve(data);
       } catch (JSONException e) {
@@ -275,8 +369,8 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
   public void register(final Promise promise) {
     ZaloSDK.Instance.registerZalo(reactContext.getCurrentActivity(), new OAuthCompleteListener() {
       @Override
-      public void onAuthenError(int errorCode, String message) {
-        promise.reject(errorCode + "", message);
+      public void onAuthenError(ErrorResponse errorResponse) {
+        promise.reject(errorResponse.getErrorCode() + "", errorResponse.getErrorMsg());
       }
 
       @Override
@@ -290,13 +384,4 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
       }
     });
   }
-
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
-//    @ReactMethod
-//    public void multiply(int a, int b, Promise promise) {
-//        promise.resolve(a * b);
-//    }
-//
-//    public static native int nativeMultiply(int a, int b);
 }

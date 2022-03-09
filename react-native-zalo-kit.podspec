@@ -16,5 +16,5 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   s.dependency "React-Core"
-  s.dependency "ZaloSDK", "2.6.0729"
+  s.dependency "ZaloSDK", "4.1.0120"
 end

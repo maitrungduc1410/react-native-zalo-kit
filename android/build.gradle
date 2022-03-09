@@ -23,8 +23,6 @@ android {
     defaultConfig {
         minSdkVersion safeExtGet('ZaloKit_minSdkVersion', 16)
         targetSdkVersion safeExtGet('ZaloKit_targetSdkVersion', 29)
-        versionCode 1
-        versionName "1.0"
 
     }
 
@@ -56,7 +54,7 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    api "me.zalo:sdk-core:2.6.0428"
-    api "me.zalo:sdk-auth:2.6.0428"
-    api "me.zalo:sdk-openapi:2.6.0428"
+    api "me.zalo:sdk-core:4.0.1123"
+    api "me.zalo:sdk-auth:4.0.1123"
+    api "me.zalo:sdk-openapi:4.0.1123"
 }

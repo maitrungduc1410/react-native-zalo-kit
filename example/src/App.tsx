@@ -61,10 +61,10 @@ export default class App extends Component<any, any> {
   getUserProfile = async () => {
     try {
       const userProfile = await ZaloKit.getUserProfile();
-      console.log(userProfile);
+      console.log(userProfile, '++++++');
       this.setState({ userProfile });
     } catch (error: any) {
-      console.log(error.toString());
+      console.log(error.toString(), '.....1231');
     }
   };
 

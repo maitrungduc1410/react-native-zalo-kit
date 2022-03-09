@@ -1,5 +1,13 @@
 import ZaloSDK
 
+let ZaloKitTokenDataKey = "__RN_ZALO_KIT__"
+
+struct TokenData: Codable {
+    let accessToken: String
+    let refreshToken: String
+}
+
+
 @objc(ZaloKit)
 class ZaloKit: NSObject {
     
@@ -16,6 +24,30 @@ class ZaloKit: NSObject {
         ]
     }
     
+    private func getTokenFromCache() -> TokenData? {
+        if let savedData = UserDefaults.standard.object(forKey: ZaloKitTokenDataKey) as? Data {
+            let decoder = JSONDecoder()
+            if let loadedData = try? decoder.decode(TokenData.self, from: savedData) {
+                return loadedData
+            }
+        }
+        
+        return nil
+    }
+    
+    private func saveTokenToCache(data: TokenData) -> Void {
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(data) {
+            UserDefaults.standard.setValue(encoded, forKey: ZaloKitTokenDataKey)
+        }
+    }
+    
+    private func getAccessToken(oauthCode: String, codeVerifier: String, completion: @escaping (ZOTokenResponseObject?) -> Void) {
+        ZaloSDK.sharedInstance().getAccessToken(withOAuthCode: oauthCode, codeVerifier: codeVerifier, completionHandler: { (response) in
+            completion(response)
+        })
+    }
+    
     @objc(login:withResolver:withRejecter:)
     func login(authType: String, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
         var type = ZAZAloSDKAuthenTypeViaZaloAppAndWebView
@@ -28,33 +60,61 @@ class ZaloKit: NSObject {
         
         DispatchQueue.main.async {
             let presentedViewController = RCTPresentedViewController()
-            ZaloSDK.sharedInstance().authenticateZalo(with: type, parentController: presentedViewController, handler: {(response) in
-                let errorCode = response?.errorCode ?? 401
-                if (response != nil && response!.isSucess) {
-                    let result: NSDictionary = [
-                        "oauthCode": response?.oauthCode ?? "",
-                        "userId": response?.userId ?? "",
-                        "socialId": response?.socialId ?? ""
-                    ]
-                    resolve(result)
-                } else if (errorCode != kZaloSDKErrorCodeUserCancel.rawValue) {
+
+            let codeVerifier = generateCodeVerifier() ?? ""
+            let codeChallenege = generateCodeChallenge(codeVerifier: codeVerifier)
+//            let state = generateState(withLength: 10)
+
+            ZaloSDK.sharedInstance().authenticateZalo(with: type, parentController: presentedViewController, codeChallenge: codeChallenege, extInfo: nil, handler: {(response) in
+
+                if response?.isSucess == true {
+                    let oauthCode =  response?.oauthCode ?? ""
+                    self.getAccessToken(oauthCode: oauthCode, codeVerifier: codeVerifier, completion: {(tokenResponse) in
+                        if (tokenResponse?.isSucess == true) {
+                            let tokenData = TokenData(accessToken: tokenResponse?.accessToken ?? "", refreshToken: tokenResponse?.refreshToken ?? "")
+                            
+                            let result: NSDictionary = [
+                                "accessToken": tokenData.accessToken,
+                                "refreshToken": tokenData.refreshToken
+                            ]
+                            
+                            self.saveTokenToCache(data: tokenData)
+                            resolve(result)
+                        } else {
+                            let errorCode = tokenResponse?.errorCode ?? 401
+                            let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: tokenResponse?.errorMessage ?? ""])
+                            reject(String(errorCode), tokenResponse?.errorMessage, error)
+                        }
+                    })
+
+                } else {
+                    let errorCode = response?.errorCode ?? 401
                     let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: response?.errorMessage ?? ""])
                     reject(String(errorCode), response?.errorMessage, error)
                 }
             })
         }
     }
-    
+
     @objc(logout)
     func logout() -> Void {
         ZaloSDK.sharedInstance().unauthenticate()
+        UserDefaults.standard.removeObject(forKey: ZaloKitTokenDataKey)
     }
     
     @objc(isAuthenticated:withRejecter:)
     func isAuthenticated(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let tokenData = getTokenFromCache() else {
+            let errorCode = 401
+            let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: "Unauthenticated"])
+            reject(String(errorCode), "Unauthenticated", error)
+            
+            return
+        }
+        
         DispatchQueue.main.async {
-            ZaloSDK.sharedInstance().isAuthenticatedZalo(completionHandler: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+            ZaloSDK.sharedInstance().validateRefreshToken(tokenData.refreshToken, extInfo: nil, completionHandler: {(response) in
+                if response?.isSucess == true {
                     resolve(true)
                 } else {
                     let errorCode = response?.errorCode ?? 401
@@ -64,12 +124,21 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(getUserProfile:withRejecter:)
     func getUserProfile(resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let tokenData = getTokenFromCache() else {
+            let errorCode = 401
+            let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: "Unauthenticated"])
+            reject(String(errorCode), "Unauthenticated", error)
+            
+            return
+        }
+        
+        
         DispatchQueue.main.async {
-            ZaloSDK.sharedInstance().getZaloUserProfile(callback: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+            ZaloSDK.sharedInstance().getZaloUserProfile(withAccessToken: tokenData.accessToken, callback: {(response) in
+                if response!.errorCode == ZaloSDKErrorCode.sdkErrorCodeNoneError.rawValue {
                     resolve(response!.data)
                 } else {
                     let errorCode = response?.errorCode ?? 422
@@ -79,12 +148,20 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(getUserFriendList:withCount:withResolver:withRejecter:)
     func getUserFriendList(offset: Int, count: Int, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let tokenData = getTokenFromCache() else {
+            let errorCode = 401
+            let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: "Unauthenticated"])
+            reject(String(errorCode), "Unauthenticated", error)
+            
+            return
+        }
+        
         DispatchQueue.main.async {
-            ZaloSDK.sharedInstance().getUserFriendList(atOffset: UInt(offset), count: UInt(count), callback: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+            ZaloSDK.sharedInstance().getUserFriendList(atOffset: UInt(offset), count: UInt(count), accessToken: tokenData.accessToken, callback: {(response) in
+                if response!.errorCode == ZaloSDKErrorCode.sdkErrorCodeNoneError.rawValue {
                     resolve(response!.data)
                 } else {
                     let errorCode = response?.errorCode ?? 422
@@ -94,12 +171,20 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(getUserInvitableFriendList:withCount:withResolver:withRejecter:)
     func getUserInvitableFriendList(offset: Int, count: Int, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let tokenData = getTokenFromCache() else {
+            let errorCode = 401
+            let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: "Unauthenticated"])
+            reject(String(errorCode), "Unauthenticated", error)
+            
+            return
+        }
+        
         DispatchQueue.main.async {
-            ZaloSDK.sharedInstance().getUserInvitableFriendList(atOffset: UInt(offset), count: UInt(count), callback: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+            ZaloSDK.sharedInstance().getUserInvitableFriendList(atOffset: UInt(offset), count: UInt(count), accessToken: tokenData.accessToken, callback: {(response) in
+                if response!.errorCode == ZaloSDKErrorCode.sdkErrorCodeNoneError.rawValue {
                     resolve(response!.data)
                 } else {
                     let errorCode = response?.errorCode ?? 422
@@ -109,12 +194,20 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(postFeed:withLink:withResolver:withRejecter:)
     func postFeed(message: String, link: String, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let tokenData = getTokenFromCache() else {
+            let errorCode = 401
+            let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: "Unauthenticated"])
+            reject(String(errorCode), "Unauthenticated", error)
+            
+            return
+        }
+        
         DispatchQueue.main.async {
-            ZaloSDK.sharedInstance().postFeed(withMessage: message, link: link, callback: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+            ZaloSDK.sharedInstance().postFeed(withMessage: message, link: link, accessToken: tokenData.accessToken, callback: {(response) in
+                if response?.errorCode == ZaloSDKErrorCode.sdkErrorCodeNoneError.rawValue {
                     resolve(response!.data)
                 } else {
                     let errorCode = response?.errorCode ?? 422
@@ -124,7 +217,7 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(postFeedByApp:withResolver:withRejecter:)
     func postFeedByApp(feedData: NSDictionary, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
         let feed: ZOFeed = ZOFeed(
@@ -137,12 +230,12 @@ class ZaloKit: NSObject {
         feed.linkSource = feedData["linkSource"] as? String
         feed.linkThumb = feedData["linkThumb"] as? [String]
         feed.linkDesc = feedData["linkDesc"] as? String
-        
+
         DispatchQueue.main.async {
             let presentedViewController = RCTPresentedViewController()
             
-            ZaloSDK.sharedInstance().shareFeedOrSendMessage(feed, in: presentedViewController, callback: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+            ZaloSDK.sharedInstance().share(feed, in: presentedViewController, callback: {(response) in
+                if response?.isSucess == true {
                     let result: NSDictionary = [
                         "success": response?.isSucess ?? false,
                         "data": response?.result_data ?? "",
@@ -158,12 +251,20 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(sendMessage:withMessage:withLink:withResolver:withRejecter:)
     func sendMessage(friendId: String, message: String, link: String, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let tokenData = getTokenFromCache() else {
+            let errorCode = 401
+            let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: "Unauthenticated"])
+            reject(String(errorCode), "Unauthenticated", error)
+            
+            return
+        }
+        
         DispatchQueue.main.async {
-            ZaloSDK.sharedInstance().sendMessage(to: friendId, message: message, link: link, callback: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+            ZaloSDK.sharedInstance().sendMessage(to: friendId, message: message, link: link, accessToken: tokenData.accessToken, callback: {(response) in
+                if response?.errorCode == ZaloSDKErrorCode.sdkErrorCodeNoneError.rawValue  {
                     resolve(response!.data)
                 } else {
                     let errorCode = response?.errorCode ?? 422
@@ -173,7 +274,7 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(sendMessageByApp:withResolver:withRejecter:)
     func sendMessageByApp(feedData: NSDictionary, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
         let feed: ZOFeed = ZOFeed(
@@ -189,7 +290,7 @@ class ZaloKit: NSObject {
         DispatchQueue.main.async {
             let presentedViewController = RCTPresentedViewController()
             ZaloSDK.sharedInstance().sendMessage(feed, in: presentedViewController, callback: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+                if response?.isSucess == true {
                     let result: NSDictionary = [
                         "success": response?.isSucess ?? false,
                         "data": response?.result_data ?? "",
@@ -205,12 +306,20 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(inviteFriendUseApp:withMessage:withResolver:withRejecter:)
     func sendAppRequest(friendId: String, message: String, resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let tokenData = getTokenFromCache() else {
+            let errorCode = 401
+            let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: "Unauthenticated"])
+            reject(String(errorCode), "Unauthenticated", error)
+            
+            return
+        }
+        
         DispatchQueue.main.async {
-            ZaloSDK.sharedInstance().sendAppRequest(to: friendId, message: message, callback: {(response) in
-                if (response != nil && response!.errorCode == kZaloSDKErrorCodeNoneError.rawValue) {
+            ZaloSDK.sharedInstance().sendAppRequest(to: friendId, message: message, accessToken: tokenData.accessToken, callback: {(response) in
+                if response?.errorCode == ZaloSDKErrorCode.sdkErrorCodeNoneError.rawValue {
                     resolve(response!.data)
                 } else {
                     let errorCode = response?.errorCode ?? 422
@@ -220,21 +329,24 @@ class ZaloKit: NSObject {
             })
         }
     }
-    
+
     @objc(register:withRejecter:)
     func register(resolve: @escaping RCTPromiseResolveBlock,reject: @escaping RCTPromiseRejectBlock) -> Void {
         DispatchQueue.main.async {
             let presentedViewController = RCTPresentedViewController()
-            ZaloSDK.sharedInstance().registZaloAccount(withParentController: presentedViewController, handler: {(response) in
-                let errorCode = response?.errorCode ?? 401
-                if (response != nil && response!.isSucess) {
+            let codeVerifier = generateCodeVerifier() ?? ""
+            let codeChallenege = generateCodeChallenge(codeVerifier: codeVerifier)
+            
+            ZaloSDK.sharedInstance().registZaloAccount(withParentController: presentedViewController, codeChallenge: codeChallenege, extInfo: nil, handler: {(response) in
+                if response?.isSucess == true {
                     let result: NSDictionary = [
                         "oauthCode": response?.oauthCode ?? "",
                         "userId": response?.userId ?? "",
                         "socialId": response?.socialId ?? ""
                     ]
                     resolve(result)
-                } else if (errorCode != kZaloSDKErrorCodeUserCancel.rawValue) {
+                } else {
+                    let errorCode = response?.errorCode ?? 401
                     let error = NSError(domain: "Authentication error", code: errorCode, userInfo: [NSLocalizedDescriptionKey: response?.errorMessage ?? ""])
                     reject(String(errorCode), response?.errorMessage, error)
                 }

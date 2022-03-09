@@ -15,7 +15,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Iterator;
 
 public class Util {
@@ -81,5 +84,20 @@ public class Util {
     }
 
     return "";
+  }
+
+  public static String generateCodeVerifier() {
+    SecureRandom sr = new SecureRandom();
+    byte[] code = new byte[32];
+    sr.nextBytes(code);
+    return Base64.encodeToString(code, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
+  }
+
+  public static String generateCodeChallenge(String codeVerifier) throws NoSuchAlgorithmException {
+    byte[] bytes = codeVerifier.getBytes();
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    md.update(bytes);
+    byte[] digest = md.digest();
+    return Base64.encodeToString(digest, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
   }
 }
