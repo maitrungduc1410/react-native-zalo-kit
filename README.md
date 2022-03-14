@@ -195,9 +195,8 @@ const login = async () => {
 
     /*
       returns: {
-        oauthCode: "some value"
-        userId: "some value"
-        socialId: "some value"
+        accessToken: "some value"
+        refreshToken: "some value"
       }
     */
   } catch (error) {
