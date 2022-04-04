@@ -79,12 +79,11 @@ public class ZaloKitModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public String getApplicationHashKey() {
+  public void getApplicationHashKey(Promise promise) {
     try {
-      return Util.getApplicationHashKey(reactContext);
+      promise.resolve(Util.getApplicationHashKey(reactContext));
     } catch (Exception e) {
-      e.printStackTrace();
-      return null;
+      promise.reject("Error when getting Application Hash Key", e);
     }
   }
 
