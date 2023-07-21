@@ -23,13 +23,14 @@
 
 # Table of Contents
 1. [Installation](#Installation)
-2. [Setup](#Setup)
+2. [Supported APIs](#Supported-APIs)
+3. [Setup](#Setup)
     1. [Create Zalo Application](#Create-Zalo-Application)
     2. [iOS setup](#ios)
     3. [Android setup](#android)
-3. [Usage](#usage)
-4. [Troubleshooting](#troubleshooting)
-5. [Demo](#demo)
+4. [Usage](#usage)
+5. [Troubleshooting](#troubleshooting)
+6. [Demo](#demo)
 
 # Installation
 With npm:
@@ -37,6 +38,24 @@ With npm:
 
 With yarn:
 `$ yarn add react-native-zalo-kit`
+
+# Supported APIs
+Zalo has stopped suporting some APIs, which will throw `Application is not registered for this request` error when calling. [Check here](https://developers.zalo.me/changelog/v211028-dung-ho-tro-mot-so-social-api-6142) for details.
+
+Below is list of supported APIs:
+
+- [x] Login
+- [x] isAuthenticated
+- [x] getUserProfile
+- [x] logout
+- [ ] <s>getUserFriendList</s>
+- [ ] <s>getUserInvitableFriendList</s>
+- [ ] <s>postFeed</s>
+- [ ] <s>sendMessageToFriend</s>
+- [ ] <s>inviteFriendUseApp</s>
+- [x] sendMessageByApp
+- [x] postFeedByApp
+- [x] register
 
 # Setup
 ## Create Zalo Application
@@ -63,7 +82,7 @@ Run the following command to setup for iOS:
 cd ios && pod install
 ```
 
-After that, open `ios/<your_app_name>/AppDelegate.m`, and add the following:
+After that, open `ios/<your_app_name>/AppDelegate.mm`, and add the following:
 ```objc
 #import <ZaloSDK/ZaloSDK.h>
 
@@ -72,7 +91,8 @@ After that, open `ios/<your_app_name>/AppDelegate.m`, and add the following:
     ...
 
     [[ZaloSDK sharedInstance] initializeWithAppId:@"<YOUR_ZALO_APP_ID>"];
-    return YES;
+    
+    return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
 ...  
@@ -81,13 +101,67 @@ After that, open `ios/<your_app_name>/AppDelegate.m`, and add the following:
   return [[ZDKApplicationDelegate sharedInstance] application:application openURL:url options:options];
 }
 ```
+<details>
+  <summary>Example AppDelegate.mm</summary>
+  
+  ```objc
+  #import "AppDelegate.h"
+  #import <React/RCTBundleURLProvider.h>
+  #import <ZaloSDK/ZaloSDK.h>
 
-Next, Open your app in Xcode (you have to use `.xcworkspace` file) -> Select your project under Targets -> select tab Info -> URL Types -> Click `+` to add new with identifier `zalo` and URL Schemes is `zalo-your_app_id`
+  @implementation AppDelegate
+
+  - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+  {
+    self.moduleName = @"TestZaloKit";
+    // You can add your custom initial props in the dictionary below.
+    // They will be passed down to the ViewController used by React Native.
+    self.initialProps = @{};
+    
+    [[ZaloSDK sharedInstance] initializeWithAppId:@"ZALO_APP_ID"];
+
+    return [super application:application didFinishLaunchingWithOptions:launchOptions];
+  }
+
+  - (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<NSString *,id> *)options {
+    return [[ZDKApplicationDelegate sharedInstance] application:application openURL:url options:options];
+  }
+
+  - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+  {
+  #if DEBUG
+    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  #else
+    return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  #endif
+  }
+
+  @end
+
+  ```
+</details>
+
+<br />
+
+Next, Open your app in Xcode (you have to use `.xcworkspace` file) -> Select your project under Targets -> select tab `Info`, select the last line and click `+`:
+
+<img src="./images/query_scheme_add.png" />
+
+Then key in `LSApplicationQueriesSchemes`:
+
+<img src="./images/query_scheme_input.png" />
+
+After that hit `Enter`, it'll automatically change key name to `Queried URL Schemes` (type Array), then insert 2 items with value `zalosdk` and `zaloshareext` like below:
+
+<img src="./images/query_scheme_result.png" />
+
+
+Next, still under tab `Info` -> URL Types -> Click `+` to add new with identifier `zalo` and URL Schemes is `zalo-your_app_id`
 
 <img src="./images/url_type.png" />
 
 ## Android
-1. Open `android/build.gradle`, and change the `minSdkVersion` to 18:
+1. Open `android/build.gradle`, and check the `minSdkVersion` if it's < 18 then make it 18 otherwise leave default:
 ```
 buildscript {
     ext {
@@ -150,7 +224,9 @@ public class MainApplication extends Application implements ReactApplication {
     android:value="@string/appID" />
 
   <activity
-    android:name="com.zing.zalo.zalosdk.oauth.BrowserLoginActivity">
+    android:name="com.zing.zalo.zalosdk.oauth.BrowserLoginActivity"
+    android:exported="true"  
+  >
     <intent-filter>
       <action android:name="android.intent.action.VIEW" />
       <category android:name="android.intent.category.DEFAULT" />
@@ -159,6 +235,10 @@ public class MainApplication extends Application implements ReactApplication {
       <!-- eg: <data android:scheme="zalo-1234567890" />-->
     </intent-filter>
   </activity>
+
+  <queries>
+    <package android:name="com.zing.zalo" />
+  </queries>
 </application>
 ```
 6. In `android/app/src/proguard-rules.pro` add the following:
@@ -525,8 +605,24 @@ Make sure that you have request for all permissions needed from Zalo Developer p
 
 > Approval process is easy, so just request for everything :)
 
+> Check [Supported APIs](#Supported-APIs) also
 3. "The application is not approved"
 Check that your configuration on Zalo Developer Portal is correct: Bundle/Package ID, app hash key, request for permissions, app ID is correct,...
+
+4. "Bạn chưa cài Zalo"
+
+Make sure in `Manifest.xml` you add the following:
+```yml
+<manifest>
+
+  # Others...
+
+  <queries>
+    <package android:name="com.zing.zalo" />
+  </queries>
+</manifest>
+
+```
 # Demo
 To run the demo project, run the following commands:
 ```sh

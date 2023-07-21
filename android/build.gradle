@@ -54,7 +54,7 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    api "me.zalo:sdk-core:4.0.1123"
-    api "me.zalo:sdk-auth:4.0.1123"
-    api "me.zalo:sdk-openapi:4.0.1123"
+    api "me.zalo:sdk-core:4.2.0704"
+    api "me.zalo:sdk-auth:4.2.0704"
+    api "me.zalo:sdk-openapi:4.2.0704"
 }
