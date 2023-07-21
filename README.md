@@ -22,10 +22,10 @@
 </div>
 
 # Table of Contents
-1. [Installation](#Installation)
-2. [Supported APIs](#Supported-APIs)
-3. [Setup](#Setup)
-    1. [Create Zalo Application](#Create-Zalo-Application)
+1. [Installation](#installation)
+2. [Supported APIs](#supported-apis)
+3. [Setup](#setup)
+    1. [Create Zalo Application](#create-zalo-application)
     2. [iOS setup](#ios)
     3. [Android setup](#android)
 4. [Usage](#usage)
@@ -607,6 +607,7 @@ Make sure that you have request for all permissions needed from Zalo Developer p
 
 > Check [Supported APIs](#Supported-APIs) also
 3. "The application is not approved"
+
 Check that your configuration on Zalo Developer Portal is correct: Bundle/Package ID, app hash key, request for permissions, app ID is correct,...
 
 4. "Bạn chưa cài Zalo"
