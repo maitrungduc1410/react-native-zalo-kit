@@ -79,7 +79,7 @@ After that you'll get your Zalo App Key, and you'll need to use it for next sect
 ## iOS
 Run the following command to setup for iOS:
 ```
-cd ios && pod install
+npx pod-install ios
 ```
 
 After that, open `ios/<your_app_name>/AppDelegate.mm`, and add the following:
@@ -235,11 +235,11 @@ public class MainApplication extends Application implements ReactApplication {
       <!-- eg: <data android:scheme="zalo-1234567890" />-->
     </intent-filter>
   </activity>
-
-  <queries>
-    <package android:name="com.zing.zalo" />
-  </queries>
 </application>
+
+<queries>
+  <package android:name="com.zing.zalo" />
+</queries>
 ```
 6. In `android/app/src/proguard-rules.pro` add the following:
 ```
