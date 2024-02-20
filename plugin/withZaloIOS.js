@@ -33,10 +33,10 @@ const withZaloAppDelegate = (config, props) => {
       );
 
       const oldCode =
-        'return [super application:application openURL:url options:options] || [RCTLinkingManager application:application openURL:url options:options]';
+        '[super application:application openURL:url options:options] || [RCTLinkingManager application:application openURL:url options:options]';
       modConfig.modResults.contents = modConfig.modResults.contents.replace(
         oldCode,
-        insertionCodeBot2 + ' || ' + oldCode,
+        'return ' + insertionCodeBot2 + ' || ' + oldCode,
       );
     }
 
