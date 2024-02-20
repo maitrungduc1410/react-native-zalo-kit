@@ -13,6 +13,8 @@
     "android",
     "ios",
     "cpp",
+    "plugin",
+    "app.plugin.js",
     "react-native-zalo-kit.podspec",
     "!lib/typescript/example",
     "!android/build",
