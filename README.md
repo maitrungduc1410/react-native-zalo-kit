@@ -76,7 +76,8 @@ After that you'll get your Zalo App Key, and you'll need to use it for next sect
 
 **Note 1**: you're recommended to turn your Zalo app to `Live Mode` in order to get full functionalities.
 
-## iOS
+## React Native CLI Project
+### iOS
 Run the following command to setup for iOS:
 ```
 npx pod-install ios
@@ -160,7 +161,7 @@ Next, still under tab `Info` -> URL Types -> Click `+` to add new with identifie
 
 <img src="./images/url_type.png" />
 
-## Android
+### Android
 1. Open `android/build.gradle`, and check the `minSdkVersion` if it's < 18 then make it 18 otherwise leave default:
 ```
 buildscript {
@@ -172,7 +173,11 @@ buildscript {
 
     ...
 ```
-2. Open `android/app/src/main/java/<your_app_package>/MainActivity.java`, and add the following:
+2. Open `android/app/src/main/java/<your_app_package>/MainActivity.(java|kt)`, and add the following:
+
+<details>
+<summary>Java</summary>
+
 ```java
 import com.zing.zalo.zalosdk.oauth.ZaloSDK;
 import android.content.Intent;
@@ -189,7 +194,33 @@ public class MainActivity extends ReactActivity {
 }
 ```
 
-3. After that, open `android/app/src/main/java/<your_app_package>/MainApplication.java`, and add the following:
+</details>
+
+<details>
+<summary>Kotlin</summary>
+
+```kotlin
+import com.zing.zalo.zalosdk.oauth.ZaloSDK;
+import android.content.Intent;
+
+class MainActivity : ReactActivity() {
+  ...
+
+  // override method below (create it if not exist)
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+    ZaloSDK.Instance.onActivityResult(this, requestCode, resultCode, data)
+  }
+}
+```
+
+</details>
+
+3. After that, open `android/app/src/main/java/<your_app_package>/MainApplication.(java|kt)`, and add the following:
+
+<details>
+<summary>Java</summary>
+
 ```java
 import com.zing.zalo.zalosdk.oauth.ZaloSDKApplication;
 
@@ -204,6 +235,26 @@ public class MainApplication extends Application implements ReactApplication {
   }
 }
 ```
+
+</details>
+
+<details>
+<summary>Kotlin</summary>
+
+```kotlin
+import com.zing.zalo.zalosdk.oauth.ZaloSDKApplication;
+
+class MainApplication : Application(), ReactApplication {
+  ...
+
+  override fun onCreate() {
+    ...
+    ZaloSDKApplication.wrap(this);
+  }
+}
+```
+
+</details>
 
 4. Add `appID` to `android/app/src/main/res/values/strings.xml`
 ```xml
@@ -247,6 +298,95 @@ public class MainApplication extends Application implements ReactApplication {
 -keep enum com.zing.zalo.**{ *; }
 -keep interface com.zing.zalo.**{ *; }
 ```
+## Expo project (managed workflow)
+<details>
+<summary>Expand to view</summary>
+
+If you're using `app.json` then you need to change to use `app.config.js`. For example:
+```js
+// app.config.js
+
+module.exports = { /* content of your app.json */}
+```
+
+Next to in order to safely update AppDelete, MainActivity and MainApplication so that it won't conflict with other plugins, we'll log the content of them out, then add custom code. Finally pass content of the files as strings to Zalo Kit Expo plugin.
+
+First in your `app.config.js` > `plugins`, let's log content of AppDelete, MainActivity and MainApplication.
+```js
+module.exports = {
+  expo: {
+    // ...other configs
+    plugins: [
+      ['react-native-zalo-kit/expo/withAppDelegateDebug'],
+      ['react-native-zalo-kit/expo/withMainActivityDebug'],
+      ['react-native-zalo-kit/expo/withMainApplicationDebug']
+    ],
+  },
+};
+
+```
+Now run:
+```shell
+npx expo prebuild --clean
+```
+You'll see actual content of the 3 files in console, copy each of them and store in a single file name `zalokitStrings.js` at root folder project, then you do update each file exactly same as with RN CLI project (remember to update the zalo app ID in `AppDelegate`)
+
+The final structure should look like this:
+
+```js
+const appDelegateContent = `<content>`
+const mainActivityContent = `<content>`
+const mainApplicationContent = `<content>`
+
+module.exports = {
+  appDelegateContent,
+  mainActivityContent,
+  mainApplicationContent
+};
+```
+Next, import those content into `app.config.js`
+```js
+const {
+  appDelegateContent,
+  mainActivityContent,
+  mainApplicationContent,
+} = require("./zalokitStrings");
+
+module.exports = {
+  expo: {
+    // other configs
+    plugins: [
+      [
+        "expo-build-properties", // remember to install this package
+        {
+          android: {
+            extraProguardRules: `
+              -keep class com.zing.zalo.**{ *; }
+              -keep enum com.zing.zalo.**{ *; }
+              -keep interface com.zing.zalo.**{ *; }
+            `,
+          },
+        },
+      ],
+      [
+        "react-native-zalo-kit/expo",
+        {
+          appId: "2451745039837416278",
+          appDelegateContent,
+          mainActivityContent,
+          mainApplicationContent,
+        },
+      ],
+    ],
+  },
+};
+```
+Finally, run `prebuild` again:
+```
+npx expo prebuild --clean
+```
+And you should get a fully configured Expo project with ZaloKit. You can view examples at: [app.config.js](./example/app.config.js) and [zalokitStrings.js](./example/zalokitStrings.js)
+</details>
 
 # Usage
 You can import the whole library like:

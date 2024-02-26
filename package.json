@@ -1,8 +1,35 @@
 {
   "name": "react-native-zalo-kit",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "Zalo SDK implementation for React Native",
   "main": "lib/commonjs/index",
+  "exports": {
+    ".": {
+      "import": "./lib/module/index.js",
+      "types":  "./lib/typescript/index.d.ts",
+      "require": "./lib/commonjs/index.js"
+    },
+    "./expo": {
+      "import": "./lib/module/expo/plugins/withZaloKit.js",
+      "types":  "./lib/typescript/expo/plugins/withZaloKit.d.ts",
+      "require": "./lib/commonjs/expo/plugins/withZaloKit.js"
+    },
+    "./expo/withAppDelegateDebug": {
+      "import": "./lib/module/expo/plugins/ios/withAppDelegateDebug.js",
+      "types":  "./lib/typescript/expo/plugins/ios/withAppDelegateDebug.d.ts",
+      "require": "./lib/commonjs/expo/plugins/ios/withAppDelegateDebug.js"
+    },
+    "./expo/withMainActivityDebug": {
+      "import": "./lib/module/expo/plugins/android/withMainActivityDebug.js",
+      "types":  "./lib/typescript/expo/plugins/android/withMainActivityDebug.d.ts",
+      "require": "./lib/commonjs/expo/plugins/android/withMainActivityDebug.js"
+    },
+    "./expo/withMainApplicationDebug": {
+      "import": "./lib/module/expo/plugins/android/withMainApplicationDebug.js",
+      "types":  "./lib/typescript/expo/plugins/android/withMainApplicationDebug.d.ts",
+      "require": "./lib/commonjs/expo/plugins/android/withMainApplicationDebug.js"
+    }
+  },
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
   "react-native": "src/index",
@@ -51,6 +78,8 @@
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^11.0.0",
+    "@expo/config-plugins": "^7.8.4",
+    "@expo/config-types": "^50.0.0",
     "@react-native-community/eslint-config": "^2.0.0",
     "@release-it/conventional-changelog": "^2.0.0",
     "@types/jest": "^26.0.0",
