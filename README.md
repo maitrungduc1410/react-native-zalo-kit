@@ -55,8 +55,6 @@ cd android && ./gradlew generateCodegenArtifactsFromSchema
 ```
 
 # Supported APIs
-Zalo has stopped suporting some APIs, which will throw `Application is not registered for this request` error when calling. [Check here](https://developers.zalo.me/changelog/v211028-dung-ho-tro-mot-so-social-api-6142) for details.
-
 Below is list of supported APIs:
 
 - [x] Login
@@ -64,7 +62,7 @@ Below is list of supported APIs:
 - [x] getUserProfile
 - [x] logout
 
-Supported APIs are available here:
+See more here:
 - iOS: https://developers.zalo.me/docs/sdk/ios-sdk/references/ma-loi
 - Android: https://developers.zalo.me/docs/sdk/android-sdk/tong-quan
 
