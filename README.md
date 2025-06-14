@@ -291,12 +291,6 @@ npx expo prebuild
 
 Then following the same steps as RN CLI project above
 # Usage
-```js
-import { login } from 'react-native-zalo-kit'
-
-// Usage
-login()
-```
 ## Login
 ```js
 import { login } from 'react-native-zalo-kit'
