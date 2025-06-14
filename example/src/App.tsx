@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import {
   Platform,
   SafeAreaView,
@@ -10,7 +10,13 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
-import ZaloKit from 'react-native-zalo-kit';
+import {
+  getApplicationHashKey,
+  getUserProfile,
+  login,
+  isAuthenticated,
+  logout,
+} from 'react-native-zalo-kit';
 
 export default class App extends Component<any, any> {
   constructor(props: any) {
@@ -25,7 +31,7 @@ export default class App extends Component<any, any> {
 
   async componentDidMount() {
     if (Platform.OS === 'android') {
-      const key = await ZaloKit.getApplicationHashKey();
+      const key = await getApplicationHashKey();
       console.log(key);
       this.setState({
         androidKey: key,
@@ -35,13 +41,13 @@ export default class App extends Component<any, any> {
 
   login = async () => {
     try {
-      const data = await ZaloKit.login(ZaloKit.Constants.AUTH_VIA_APP_OR_WEB);
+      const data = await login('AUTH_VIA_APP_OR_WEB');
       console.log(data);
       this.setState({
         loginStatus: true,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       this.setState({
         loginStatus: false,
@@ -49,8 +55,8 @@ export default class App extends Component<any, any> {
     }
   };
 
-  logout = () => {
-    ZaloKit.logout();
+  _logout = () => {
+    logout();
     this.setState({
       userProfile: null,
       isAuthenticated: null,
@@ -60,132 +66,27 @@ export default class App extends Component<any, any> {
 
   getUserProfile = async () => {
     try {
-      const userProfile = await ZaloKit.getUserProfile();
+      const userProfile = await getUserProfile();
       console.log(userProfile, '++++++');
       this.setState({ userProfile });
     } catch (error: any) {
-      console.log(error.toString(), '.....1231');
+      console.error(error.toString(), '.....1231');
     }
   };
 
-  isAuthenticated = async () => {
+  _isAuthenticated = async () => {
     try {
-      const isAuthenticated = await ZaloKit.isAuthenticated();
-      this.setState({ isAuthenticated });
+      const r = await isAuthenticated();
+      this.setState({ isAuthenticated: r });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       this.setState({ isAuthenticated: false });
-    }
-  };
-
-  getUserFriendList = async () => {
-    try {
-      const friends = await ZaloKit.getUserFriendList(1, 10);
-      console.log(friends);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  getUserInvitableFriendList = async () => {
-    try {
-      const friends = await ZaloKit.getUserInvitableFriendList(1, 10);
-      console.log(friends);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  postFeed = async () => {
-    try {
-      const link = 'https://zing.vn';
-      const message = 'Hello World';
-      const post = await ZaloKit.postFeed(message, link);
-      console.log(post);
-    } catch (error: any) {
-      console.log(error.message);
-    }
-  };
-
-  sendMessage = async () => {
-    try {
-      const friendId = '3303969417419981371';
-      const link = 'https://zing.vn';
-      const message = 'Hello World';
-      const post = await ZaloKit.sendMessage(friendId, message, link);
-      console.log(post);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  inviteFriendUseApp = async () => {
-    try {
-      const friendIds = ['3303969417419981371'];
-      const message = 'Hello World';
-      const post = await ZaloKit.inviteFriendUseApp(friendIds, message);
-      console.log(post);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  sendMessageByApp = async () => {
-    try {
-      const feedData = {
-        appName: 'DEMO RN APP',
-        message: 'Hello World',
-        link: 'https://zing.vn',
-        linkTitle: 'LINK TITLE',
-        linkSource: 'LINK SOURCE',
-        linkDesc: 'LINK DESC',
-        linkThumb: [
-          'https://lh3.googleusercontent.com/dr8A58cYr-Mnz6mi5QCe6_I2yaCICVV0jL7fjrzWixn89HiA4BGW-KraR7yU4JappTs',
-        ],
-        others: {},
-      };
-
-      const data = await ZaloKit.sendMessageByApp(feedData);
-      console.log(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  postFeedByApp = async () => {
-    try {
-      const feedData = {
-        appName: 'DEMO RN APP',
-        message: 'Hello World',
-        link: 'https://zing.vn',
-        linkTitle: 'LINK TITLE',
-        linkSource: 'LINK SOURCE',
-        linkDesc: 'LINK DESC',
-        linkThumb: [
-          'https://lh3.googleusercontent.com/dr8A58cYr-Mnz6mi5QCe6_I2yaCICVV0jL7fjrzWixn89HiA4BGW-KraR7yU4JappTs',
-        ],
-        others: {},
-      };
-
-      const data = await ZaloKit.postFeedByApp(feedData);
-      console.log(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  register = async () => {
-    try {
-      const data = await ZaloKit.register();
-      console.log(data, '.......');
-    } catch (error) {
-      console.log(error);
     }
   };
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <StatusBar barStyle={'dark-content'} />
         <ScrollView contentContainerStyle={styles.container}>
           {Platform.OS === 'android' && (
@@ -207,7 +108,7 @@ export default class App extends Component<any, any> {
           <View style={styles.row}>
             <TouchableOpacity
               style={styles.button}
-              onPress={this.isAuthenticated}
+              onPress={this._isAuthenticated}
             >
               <Text style={styles.buttonText}>isAuthenticated</Text>
             </TouchableOpacity>
@@ -263,73 +164,9 @@ export default class App extends Component<any, any> {
           <View style={styles.row}>
             <TouchableOpacity
               style={[styles.button, { flex: 1 }]}
-              onPress={this.logout}
+              onPress={this._logout}
             >
               <Text style={styles.buttonText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.getUserFriendList}
-            >
-              <Text style={styles.buttonText}>getUserFriendList</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.getUserInvitableFriendList}
-            >
-              <Text style={styles.buttonText}>getUserInvitableFriendList</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.postFeed}
-            >
-              <Text style={styles.buttonText}>postFeed</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.sendMessage}
-            >
-              <Text style={styles.buttonText}>sendMessageToFriend</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.inviteFriendUseApp}
-            >
-              <Text style={styles.buttonText}>inviteFriendUseApp</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.sendMessageByApp}
-            >
-              <Text style={styles.buttonText}>sendMessageByApp</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.postFeedByApp}
-            >
-              <Text style={styles.buttonText}>postFeedByApp</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.register}
-            >
-              <Text style={styles.buttonText}>register</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -341,6 +178,7 @@ export default class App extends Component<any, any> {
 const styles = StyleSheet.create({
   container: {
     padding: 10,
+    marginTop: 50,
   },
   welcome: {
     fontSize: 20,

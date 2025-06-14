@@ -22,22 +22,37 @@
 </div>
 
 # Table of Contents
-1. [Installation](#installation)
-2. [Supported APIs](#supported-apis)
-3. [Setup](#setup)
-    1. [Create Zalo Application](#create-zalo-application)
-    2. [React Native CLI project](#react-native-cli-project)
-    3. [Expo project (Managed workflow)](#expo-project-managed-workflow)
-4. [Usage](#usage)
-5. [Troubleshooting](#troubleshooting)
-6. [Demo](#demo)
+
+- [Installation](#installation)
+- [Supported APIs](#supported-apis)
+- [Setup](#setup)
+   * [Create Zalo Application](#create-zalo-application)
+   * [React Native CLI Project](#react-native-cli-project)
+      + [iOS](#ios)
+      + [Android](#android)
+   * [Expo](#expo)
+- [Usage](#usage)
+   * [Login](#login)
+   * [Check if authenticated](#check-if-authenticated)
+   * [Get User Profile](#get-user-profile)
+   * [Logout](#logout)
+- [Troubleshooting](#troubleshooting)
+- [Demo](#demo)
+- [Thank you](#thank-you)
 
 # Installation
 With npm:
-`$ npm install react-native-zalo-kit --save`
+`$ npm install react-native-zalo-kit`
 
 With yarn:
 `$ yarn add react-native-zalo-kit`
+
+After that:
+```
+cd ios && pod install
+
+cd android && ./gradlew generateCodegenArtifactsFromSchema
+```
 
 # Supported APIs
 Zalo has stopped suporting some APIs, which will throw `Application is not registered for this request` error when calling. [Check here](https://developers.zalo.me/changelog/v211028-dung-ho-tro-mot-so-social-api-6142) for details.
@@ -48,14 +63,10 @@ Below is list of supported APIs:
 - [x] isAuthenticated
 - [x] getUserProfile
 - [x] logout
-- [ ] <s>getUserFriendList</s>
-- [ ] <s>getUserInvitableFriendList</s>
-- [ ] <s>postFeed</s>
-- [ ] <s>sendMessageToFriend</s>
-- [ ] <s>inviteFriendUseApp</s>
-- [x] sendMessageByApp
-- [x] postFeedByApp
-- [x] register
+
+Supported APIs are available here:
+- iOS: https://developers.zalo.me/docs/sdk/ios-sdk/references/ma-loi
+- Android: https://developers.zalo.me/docs/sdk/android-sdk/tong-quan
 
 # Setup
 ## Create Zalo Application
@@ -83,7 +94,7 @@ Run the following command to setup for iOS:
 npx pod-install ios
 ```
 
-After that, open `ios/<your_app_name>/AppDelegate.mm`, and add the following:
+After that, open `ios/<your_app_name>/AppDelegate.mm` (or .swift), and add the following:
 ```objc
 #import <ZaloSDK/ZaloSDK.h>
 
@@ -102,45 +113,30 @@ After that, open `ios/<your_app_name>/AppDelegate.mm`, and add the following:
   return [[ZDKApplicationDelegate sharedInstance] application:application openURL:url options:options];
 }
 ```
-<details>
-  <summary>Example AppDelegate.mm</summary>
-  
-  ```objc
-  #import "AppDelegate.h"
-  #import <React/RCTBundleURLProvider.h>
-  #import <ZaloSDK/ZaloSDK.h>
 
-  @implementation AppDelegate
+Swift:
+```swift
+import ZaloSDK
 
-  - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-  {
-    self.moduleName = @"TestZaloKit";
-    // You can add your custom initial props in the dictionary below.
-    // They will be passed down to the ViewController used by React Native.
-    self.initialProps = @{};
+@main
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+  func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+  ) -> Bool {
+    // ...
     
-    [[ZaloSDK sharedInstance] initializeWithAppId:@"ZALO_APP_ID"];
+    ZaloSDK.sharedInstance().initialize(withAppId: "app_id")
 
-    return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    return true
   }
-
-  - (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<NSString *,id> *)options {
-    return [[ZDKApplicationDelegate sharedInstance] application:application openURL:url options:options];
+  
+  func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    return ZDKApplicationDelegate.sharedInstance().application(app, open: url, options: options)
   }
-
-  - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-  {
-  #if DEBUG
-    return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
-  #else
-    return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-  #endif
-  }
-
-  @end
-
-  ```
-</details>
+}
+```
 
 <br />
 
@@ -175,8 +171,7 @@ buildscript {
 ```
 2. Open `android/app/src/main/java/<your_app_package>/MainActivity.(java|kt)`, and add the following:
 
-<details>
-<summary>Java</summary>
+Java:
 
 ```java
 import com.zing.zalo.zalosdk.oauth.ZaloSDK;
@@ -194,10 +189,8 @@ public class MainActivity extends ReactActivity {
 }
 ```
 
-</details>
 
-<details>
-<summary>Kotlin</summary>
+Kotlin
 
 ```kotlin
 import com.zing.zalo.zalosdk.oauth.ZaloSDK;
@@ -214,12 +207,9 @@ class MainActivity : ReactActivity() {
 }
 ```
 
-</details>
-
 3. After that, open `android/app/src/main/java/<your_app_package>/MainApplication.(java|kt)`, and add the following:
 
-<details>
-<summary>Java</summary>
+Java:
 
 ```java
 import com.zing.zalo.zalosdk.oauth.ZaloSDKApplication;
@@ -236,10 +226,7 @@ public class MainApplication extends Application implements ReactApplication {
 }
 ```
 
-</details>
-
-<details>
-<summary>Kotlin</summary>
+Kotlin:
 
 ```kotlin
 import com.zing.zalo.zalosdk.oauth.ZaloSDKApplication;
@@ -253,8 +240,6 @@ class MainApplication : Application(), ReactApplication {
   }
 }
 ```
-
-</details>
 
 4. Add `appID` to `android/app/src/main/res/values/strings.xml`
 ```xml
@@ -298,106 +283,16 @@ class MainApplication : Application(), ReactApplication {
 -keep enum com.zing.zalo.**{ *; }
 -keep interface com.zing.zalo.**{ *; }
 ```
-## Expo project (managed workflow)
-<details>
-<summary>Expand to view</summary>
 
-If you're using `app.json` then you need to change to use `app.config.js`. For example:
-```js
-// app.config.js
+## Expo
 
-module.exports = { /* content of your app.json */}
+First you need to eject ios/android native code:
+```
+npx expo prebuild
 ```
 
-Next to in order to safely update AppDelete, MainActivity and MainApplication so that it won't conflict with other plugins, we'll log the content of them out, then add custom code. Finally pass content of the files as strings to Zalo Kit Expo plugin.
-
-First in your `app.config.js` > `plugins`, let's log content of AppDelete, MainActivity and MainApplication.
-```js
-module.exports = {
-  expo: {
-    // ...other configs
-    plugins: [
-      ['react-native-zalo-kit/expo/withAppDelegateDebug'],
-      ['react-native-zalo-kit/expo/withMainActivityDebug'],
-      ['react-native-zalo-kit/expo/withMainApplicationDebug']
-    ],
-  },
-};
-
-```
-Now run:
-```shell
-npx expo prebuild --clean
-```
-You'll see actual content of the 3 files in console, copy each of them and store in a single file name `zalokitStrings.js` at root folder project, then you do update each file exactly same as with RN CLI project (remember to update the zalo app ID in `AppDelegate`)
-
-The final structure should look like this:
-
-```js
-const appDelegateContent = `<content>`
-const mainActivityContent = `<content>`
-const mainApplicationContent = `<content>`
-
-module.exports = {
-  appDelegateContent,
-  mainActivityContent,
-  mainApplicationContent
-};
-```
-Next, import those content into `app.config.js`
-```js
-const {
-  appDelegateContent,
-  mainActivityContent,
-  mainApplicationContent,
-} = require("./zalokitStrings");
-
-module.exports = {
-  expo: {
-    // other configs
-    plugins: [
-      [
-        "expo-build-properties", // remember to install this package
-        {
-          android: {
-            extraProguardRules: `
-              -keep class com.zing.zalo.**{ *; }
-              -keep enum com.zing.zalo.**{ *; }
-              -keep interface com.zing.zalo.**{ *; }
-            `,
-          },
-        },
-      ],
-      [
-        "react-native-zalo-kit/expo",
-        {
-          appId: "2451745039837416278",
-          appDelegateContent,
-          mainActivityContent,
-          mainApplicationContent,
-        },
-      ],
-    ],
-  },
-};
-```
-Finally, run `prebuild` again:
-```
-npx expo prebuild --clean
-```
-And you should get a fully configured Expo project with ZaloKit. You can view examples at: [app.config.js](./example/app.config.js) and [zalokitStrings.js](./example/zalokitStrings.js)
-</details>
-
+Then following the same steps as RN CLI project above
 # Usage
-You can import the whole library like:
-```js
-import ZaloKit from 'react-native-zalo-kit'
-
-// Usage:
-ZaloKit.login()
-...
-```
-Or you can just import modules you need like:
 ```js
 import { login } from 'react-native-zalo-kit'
 
@@ -406,11 +301,11 @@ login()
 ```
 ## Login
 ```js
-import { login, Constants } from 'react-native-zalo-kit'
+import { login } from 'react-native-zalo-kit'
 
 const login = async () => {
   try {
-    const oauthCode = await login(Constants.AUTH_VIA_APP_OR_WEB)
+    const oauthCode = await login("AUTH_VIA_APP_OR_WEB")
     console.log(oauthCode)
 
     /*
@@ -420,7 +315,7 @@ const login = async () => {
       }
     */
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 ```
@@ -442,11 +337,15 @@ const isAuthenticated = async () => {
       returns: true | false
     */
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 ```
 ## Get User Profile
+
+> This method is only available for IP in Vietnam
+
+
 ```js
 import { getUserProfile } from 'react-native-zalo-kit'
 
@@ -470,7 +369,7 @@ const getUserProfile = async () => {
       }
     */
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 ```
@@ -480,255 +379,6 @@ import { logout } from 'react-native-zalo-kit'
 
 const logout = () => {
   logout()
-}
-```
-## Get Application Hash Key (Android only)
-This is a helper function which returns app Hash key for Android, help you on setting up your app on [Zalo Developer Portal](https://developers.zalo.me/)
-```js
-import { getApplicationHashKey } from 'react-native-zalo-kit'
-
-const getApplicationHashKey = () => {
-  const key = getApplicationHashKey()
-  console.log(key)
-
-  /*
-    returns: 'application hash key'
-  */
-}
-```
-## Get friend list used app
-This API is to get friends who have used Zalo app
-```js
-import { getUserFriendList } from 'react-native-zalo-kit'
-
-const getUserFriendList = async () => {
-  try {
-    const offset = 0 // offset we start from
-    const count = 10 // number of records per page
-    const friends = await getUserFriendList(offset, count)
-    console.log(friends)
-
-    /*
-      returns: {
-        data: [
-          {
-            id: 'user_id_1',
-            name: 'user name',
-            phoneNumber: 'phone number',
-            gender: 'male',
-            birthday: '01/01/2020',
-            picture: {
-              data: {
-                url: 'http://image.example',
-              },
-            }
-          }
-        ],
-        paging: {},
-        summary: {
-          total_count: number,
-        }
-      }
-    */
-  } catch (error) {
-    console.log(error)
-  }
-}
-```
-## Get invitable friend list
-This API is to get friends who we can invite to use Zalo app
-```js
-import { getUserInvitableFriendList } from 'react-native-zalo-kit'
-
-const getUserInvitableFriendList = async () => {
-  try {
-    const offset = 0 // offset we start from
-    const count = 10 // number of records per page
-    const friends = await getUserInvitableFriendList(offset, count)
-    console.log(friends)
-
-    /*
-      returns: {
-        data: [
-          {
-            id: 'user_id_1',
-            name: 'user name',
-            phoneNumber: 'phone number',
-            gender: 'male',
-            birthday: '01/01/2020',
-            picture: {
-              data: {
-                url: 'http://image.example',
-              },
-            }
-          }
-        ],
-        paging: {},
-        summary: {
-          total_count: number,
-        }
-      }
-    */
-  } catch (error) {
-    console.log(error)
-  }
-}
-```
-## Post to user's feed
-```js
-import { postFeed } from 'react-native-zalo-kit'
-
-const postFeed = async () => {
-  try {
-    const link = 'https://zing.vn'
-    const message = 'Hello World'
-    const data = await postFeed(message, link)
-    console.log(data)
-    
-    /*
-      returns: {
-        id: 'post_id'
-      }
-    */
-  } catch (error) {
-    console.log(error.message)
-  }
-}
-```
-## Send message to friend
-```js
-import { sendMessage } from 'react-native-zalo-kit'
-
-const sendMessage = async () => {
-  try {
-    const friendId = 'friend_ID'
-    const link = 'https://zing.vn'
-    const message = 'Hello World'
-    const data = await sendMessage(friendId, message, link)
-    console.log(data)
-
-    /*
-      returns: {
-        to: 'friend_ID'
-      }
-    */
-  } catch (error) {
-    console.log(error)
-  }
-}
-```
-## Invite friend to use Zalo app
-```js
-import { inviteFriendUseApp } from 'react-native-zalo-kit'
-
-const inviteFriendUseApp = async () => {
-  try {
-    const friendIds = ['friend_ID1', 'friend_ID2']
-    const message = 'Hello World'
-    const data = await inviteFriendUseApp(friendIds, message)
-    console.log(data)
-
-    /*
-      returns: {
-        to: [
-          'friend_ID1', 'friend_ID2'
-        ]
-      }
-    */
-  } catch (error) {
-    console.log(error)
-  }
-}
-```
-## Send message by app
-This API is to share a link to a friend by sending a message which contains the link
-```js
-import { sendMessageByApp } from 'react-native-zalo-kit'
-
-const sendMessageByApp = async () => {
-  try {
-    const feedData = {
-      appName: 'DEMO RN APP',
-      message: 'Hello World',
-      link: 'https://zing.vn',
-      linkTitle: 'LINK TITLE',
-      linkSource: 'LINK SOURCE',
-      linkDesc: 'LINK DESC',
-      linkThumb: ['https://lh3.googleusercontent.com/dr8A58cYr-Mnz6mi5QCe6_I2yaCICVV0jL7fjrzWixn89HiA4BGW-KraR7yU4JappTs'],
-      others: {}
-    }
-
-    const data = await sendMessageByApp(feedData)
-    console.log(data)
-
-    /*
-      returns: {
-        success: true,
-        data: "<raw message>",
-        message: "format message",
-        sendAction: 0 or 1 (0: sent, 1: cancelled)
-      }
-    */
-  } catch (error) {
-    console.log(error)
-  }
-}
-```
-## Post to feed by app
-This API is to share a link to user's feed
-```js
-import { postFeedByApp } from 'react-native-zalo-kit'
-
-const postFeedByApp = async () => {
-  try {
-    const feedData = {
-      appName: 'DEMO RN APP',
-      message: 'Hello World',
-      link: 'https://zing.vn',
-      linkTitle: 'LINK TITLE',
-      linkSource: 'LINK SOURCE',
-      linkDesc: 'LINK DESC',
-      linkThumb: ['https://lh3.googleusercontent.com/dr8A58cYr-Mnz6mi5QCe6_I2yaCICVV0jL7fjrzWixn89HiA4BGW-KraR7yU4JappTs'],
-      others: {}
-    }
-
-    const data = await postFeedByApp(feedData)
-    console.log(data)
-
-    /*
-      returns: {
-        success: true,
-        data: "<raw message>",
-        message: "format message",
-        sendAction: 0 or 1 (0: sent, 1: cancelled)
-      }
-    */
-  } catch (error) {
-    console.log(error)
-  }
-}
-```
-
-## Register new account
-This API is to share a link to user's feed
-```js
-import { register } from 'react-native-zalo-kit'
-
-const register = async () => {
-  try {
-    const data = await register()
-    console.log(data)
-
-    /*
-      returns: {
-        oauthCode: "some value"
-        userId: "some value"
-        socialId: "some value"
-      }
-    */
-  } catch (error) {
-    console.log(error)
-  }
 }
 ```
 # Troubleshooting
