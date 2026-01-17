@@ -109,6 +109,10 @@ After that, open `ios/<your_app_name>/AppDelegate.mm` (or .swift), and add the f
 
 - (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<NSString *,id> *)options {
   return [[ZDKApplicationDelegate sharedInstance] application:application openURL:url options:options];
+
+  // make sure ZDKApplicationDelegate is in the first place
+  // example:
+  // return [[ZDKApplicationDelegate sharedInstance] application:application openURL:url options:options] || ... ;
 }
 ```
 
@@ -132,6 +136,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   
   func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
     return ZDKApplicationDelegate.sharedInstance().application(app, open: url, options: options)
+
+    // make sure ZDKApplicationDelegate is in the first place
+    // example:
+    // return ZDKApplicationDelegate.sharedInstance().application(app, open: url, options: options) || super.application(app, open: url, options: options) || RCTLinkingManager.application(app, open: url, options: options)
   }
 }
 ```
