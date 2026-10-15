@@ -33,6 +33,7 @@ android {
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+    consumerProguardFiles "consumer-rules.pro"
   }
 
   buildFeatures {
@@ -67,21 +68,31 @@ android {
 repositories {
   mavenCentral()
   google()
-  maven {
-    url "https://gitlab.com/api/v4/projects/50747855/packages/maven"
+}
+
+// The app resolves this library's `api` dependencies with its own repositories, and Zalo
+// publishes current SDK versions only here (Maven Central stops at 4.2.0724).
+rootProject.allprojects {
+  repositories {
+    maven {
+      url "https://gitlab.com/api/v4/projects/50747855/packages/maven"
+      content {
+        includeGroup "me.zalo"
+      }
+    }
   }
 }
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
+def zalo_sdk_version = rootProject.ext.has("zaloSdkVersion") ? rootProject.ext.get("zaloSdkVersion") : project.properties["ZaloKit_zaloSdkVersion"]
 
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-  api "me.zalo:sdk-core:+"
-  api "me.zalo:sdk-auth:+"
-  api "me.zalo:sdk-openapi:+"
-  implementation "androidx.preference:preference-ktx:1.2.1"
+  api "me.zalo:sdk-core:$zalo_sdk_version"
+  api "me.zalo:sdk-auth:$zalo_sdk_version"
+  api "me.zalo:sdk-openapi:$zalo_sdk_version"
 }
 
 react {

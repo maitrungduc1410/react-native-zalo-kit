@@ -1,205 +1,192 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  Image,
   Platform,
   SafeAreaView,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
   ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import {
+  Constants,
+  getAccessToken,
   getApplicationHashKey,
   getUserProfile,
-  login,
   isAuthenticated,
+  login,
   logout,
+  refreshAccessToken,
+  type IUserProfile,
+  type IZaloAuthResponse,
+  type LoginMethod,
 } from 'react-native-zalo-kit';
 
-export default class App extends Component<any, any> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      userProfile: null,
-      isAuthenticated: null,
-      androidKey: '',
-      loginStatus: null,
-    };
-  }
+function describeError(error: unknown): string {
+  const { code, message } = (error ?? {}) as {
+    code?: string;
+    message?: string;
+  };
+  return code ? `[${code}] ${message}` : String(message ?? error);
+}
 
-  async componentDidMount() {
+function describeToken(token: IZaloAuthResponse): string {
+  const expiresAt = token.expiresAt
+    ? new Date(token.expiresAt).toLocaleString()
+    : 'unknown';
+  return `${token.accessToken.slice(0, 12)}… (expires in ${token.expiresIn}s, at ${expiresAt})`;
+}
+
+function Button({ title, onPress }: { title: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.button} onPress={onPress}>
+      <Text style={styles.buttonText}>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+
+export default function App() {
+  const [androidKey, setAndroidKey] = useState('');
+  const [status, setStatus] = useState('');
+  const [profile, setProfile] = useState<IUserProfile | null>(null);
+
+  useEffect(() => {
     if (Platform.OS === 'android') {
-      const key = await getApplicationHashKey();
-      console.log(key);
-      this.setState({
-        androidKey: key,
-      });
+      setAndroidKey(getApplicationHashKey());
     }
-  }
+  }, []);
 
-  login = async () => {
+  const run = async (label: string, action: () => Promise<string>) => {
+    setStatus(`${label}…`);
     try {
-      const data = await login('AUTH_VIA_APP_OR_WEB');
-      console.log(data);
-      this.setState({
-        loginStatus: true,
-      });
+      setStatus(`${label}: ${await action()}`);
     } catch (error) {
-      console.error(error);
-
-      this.setState({
-        loginStatus: false,
-      });
+      console.warn(label, error);
+      setStatus(`${label} failed: ${describeError(error)}`);
     }
   };
 
-  _logout = () => {
-    logout();
-    this.setState({
-      userProfile: null,
-      isAuthenticated: null,
-      loginStatus: null,
-    });
-  };
+  const doLogin = (method: LoginMethod) =>
+    run(`login(${method})`, async () => describeToken(await login(method)));
 
-  getUserProfile = async () => {
-    try {
-      const userProfile = await getUserProfile();
-      console.log(userProfile, '++++++');
-      this.setState({ userProfile });
-    } catch (error: any) {
-      console.error(error.toString(), '.....1231');
-    }
-  };
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
+      <ScrollView contentContainerStyle={styles.container}>
+        {Platform.OS === 'android' && (
+          <Text selectable>
+            Android hash key: <Text style={styles.bold}>{androidKey}</Text>
+          </Text>
+        )}
 
-  _isAuthenticated = async () => {
-    try {
-      const r = await isAuthenticated();
-      this.setState({ isAuthenticated: r });
-    } catch (error) {
-      console.error(error);
-      this.setState({ isAuthenticated: false });
-    }
-  };
+        <View style={styles.row}>
+          <Button
+            title="Login (app or web)"
+            onPress={() => doLogin(Constants.AUTH_VIA_APP_OR_WEB)}
+          />
+          <Button
+            title="Login (app)"
+            onPress={() => doLogin(Constants.AUTH_VIA_APP)}
+          />
+          <Button
+            title="Login (web)"
+            onPress={() => doLogin(Constants.AUTH_VIA_WEB)}
+          />
+        </View>
 
-  render() {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-        <StatusBar barStyle={'dark-content'} />
-        <ScrollView contentContainerStyle={styles.container}>
-          {Platform.OS === 'android' && (
-            <Text>
-              Android App Hash Key:{' '}
-              <Text style={{ fontWeight: 'bold' }}>
-                {this.state.androidKey}
-              </Text>
-            </Text>
-          )}
-          <View style={styles.row}>
-            <TouchableOpacity style={styles.button} onPress={this.login}>
-              <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
-            <Text style={styles.rowText}>
-              Status: <Text>{JSON.stringify(this.state.loginStatus)}</Text>
-            </Text>
+        <View style={styles.row}>
+          <Button
+            title="isAuthenticated"
+            onPress={() =>
+              run('isAuthenticated', async () =>
+                String(await isAuthenticated())
+              )
+            }
+          />
+          <Button
+            title="Access token"
+            onPress={() =>
+              run('getAccessToken', async () =>
+                describeToken(await getAccessToken())
+              )
+            }
+          />
+          <Button
+            title="Refresh token"
+            onPress={() =>
+              run('refreshAccessToken', async () =>
+                describeToken(await refreshAccessToken())
+              )
+            }
+          />
+        </View>
+
+        <View style={styles.row}>
+          <Button
+            title="Get profile"
+            onPress={() =>
+              run('getUserProfile', async () => {
+                const result = await getUserProfile();
+                setProfile(result);
+                return result.name;
+              })
+            }
+          />
+          <Button
+            title="Logout"
+            onPress={() => {
+              logout();
+              setProfile(null);
+              setStatus('Logged out');
+            }}
+          />
+        </View>
+
+        <Text selectable style={styles.status}>
+          {status}
+        </Text>
+
+        {profile && (
+          <View style={styles.profile}>
+            <Text>ID: {profile.id}</Text>
+            <Text>Name: {profile.name}</Text>
+            {!!profile.picture?.data?.url && (
+              <Image
+                style={styles.avatar}
+                source={{ uri: profile.picture.data.url }}
+              />
+            )}
           </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={this._isAuthenticated}
-            >
-              <Text style={styles.buttonText}>isAuthenticated</Text>
-            </TouchableOpacity>
-            <Text style={styles.rowText}>
-              Status: <Text>{JSON.stringify(this.state.isAuthenticated)}</Text>
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this.getUserProfile}
-            >
-              <Text style={styles.buttonText}>Get User Profile</Text>
-            </TouchableOpacity>
-          </View>
-          {this.state.userProfile && (
-            <View style={styles.userInfo}>
-              <View>
-                <Text>
-                  User ID: <Text>{this.state.userProfile.id}</Text>
-                </Text>
-              </View>
-              <View>
-                <Text>
-                  Name: <Text>{this.state.userProfile.name}</Text>
-                </Text>
-              </View>
-              <View>
-                <Text>
-                  Phone: <Text>{this.state.userProfile.phoneNumber}</Text>
-                </Text>
-              </View>
-              <View>
-                <Text>
-                  Gender: <Text>{this.state.userProfile.gender}</Text>
-                </Text>
-              </View>
-              <View>
-                <Text>
-                  DOB: <Text>{this.state.userProfile.birthday}</Text>
-                </Text>
-              </View>
-              <View>
-                <Image
-                  style={{ width: 200, height: 200 }}
-                  source={{
-                    uri: this.state.userProfile.picture.data.url,
-                  }}
-                />
-              </View>
-            </View>
-          )}
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1 }]}
-              onPress={this._logout}
-            >
-              <Text style={styles.buttonText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
   container: {
     padding: 10,
     marginTop: 50,
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
+  bold: {
+    fontWeight: 'bold',
   },
   row: {
-    flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
+    flexWrap: 'wrap',
+    gap: 8,
+    marginVertical: 8,
   },
   button: {
     backgroundColor: '#6200EE',
     borderRadius: 8,
-    minWidth: 100,
+    paddingHorizontal: 12,
     height: 45,
     alignItems: 'center',
     justifyContent: 'center',
@@ -207,11 +194,15 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
   },
-  rowText: {
-    flex: 1,
-    textAlign: 'center',
+  status: {
+    marginVertical: 12,
   },
-  userInfo: {
+  profile: {
     alignItems: 'center',
+    gap: 4,
+  },
+  avatar: {
+    width: 200,
+    height: 200,
   },
 });

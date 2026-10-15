@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Zalo Kit">
+  <defs>
+    <linearGradient id="zk" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0573ff"/>
+      <stop offset="1" stop-color="#0a8cff"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#zk)"/>
+  <path d="M18 18.5h28V24L26.5 40H46v5.5H18V40l19.5-16H18z" fill="#fff"/>
+</svg>

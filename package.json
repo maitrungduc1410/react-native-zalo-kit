@@ -1,7 +1,7 @@
 {
   "name": "react-native-zalo-kit",
   "version": "5.0.0",
-  "description": "Zalo SDK implementation for React Native",
+  "description": "Zalo SDK (login and user profile) for React Native and Expo",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -10,6 +10,7 @@
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
+    "./app.plugin.js": "./app.plugin.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -20,6 +21,8 @@
     "cpp",
     "*.podspec",
     "react-native.config.js",
+    "app.plugin.js",
+    "plugin/build",
     "!ios/build",
     "!android/build",
     "!android/gradle",
@@ -34,11 +37,15 @@
   "scripts": {
     "example": "yarn workspace react-native-zalo-kit-example",
     "test": "jest",
-    "typecheck": "tsc",
+    "typecheck": "tsc && tsc -p plugin --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "prepare": "bob build",
-    "release": "release-it --only-version"
+    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib plugin/build",
+    "prepare": "bob build && tsc -p plugin",
+    "changeset": "node scripts/changeset.mjs",
+    "version-packages": "node scripts/changeset.mjs version",
+    "docs:dev": "yarn workspace react-native-zalo-kit-docs dev",
+    "docs:build": "yarn workspace react-native-zalo-kit-docs build",
+    "docs:preview": "yarn workspace react-native-zalo-kit-docs preview"
   },
   "keywords": [
     "react-native-zalo-kit",
@@ -46,7 +53,9 @@
     "react native zalo",
     "react native zalo login",
     "react native zalo sdk",
-    "react native zalo auth"
+    "react native zalo auth",
+    "expo",
+    "expo config plugin"
   ],
   "repository": {
     "type": "git",
@@ -57,21 +66,23 @@
   "bugs": {
     "url": "https://github.com/maitrungduc1410/react-native-zalo-kit/issues"
   },
-  "homepage": "https://github.com/maitrungduc1410/react-native-zalo-kit#readme",
+  "homepage": "https://maitrungduc1410.github.io/react-native-zalo-kit/",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/compat": "^1.2.7",
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
     "@evilmartians/lefthook": "^1.5.0",
+    "@expo/config-plugins": "^57.0.10",
     "@react-native-community/cli": "15.0.0-alpha.2",
     "@react-native/babel-preset": "0.79.2",
     "@react-native/eslint-config": "^0.78.0",
-    "@release-it/conventional-changelog": "^9.0.2",
     "@types/jest": "^29.5.5",
+    "@types/node": "^24.0.1",
     "@types/react": "^19.0.0",
     "commitlint": "^19.6.1",
     "del-cli": "^5.1.0",
@@ -83,48 +94,37 @@
     "react": "19.0.0",
     "react-native": "0.79.2",
     "react-native-builder-bob": "^0.40.8",
-    "release-it": "^17.10.0",
     "turbo": "^1.10.7",
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
+    "expo": "*",
     "react": "*",
     "react-native": "*"
   },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": true
+    }
+  },
   "workspaces": [
-    "example"
+    "example",
+    "docs"
   ],
   "packageManager": "yarn@3.6.1",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
       "<rootDir>/example/node_modules",
-      "<rootDir>/lib/"
+      "<rootDir>/lib/",
+      "<rootDir>/plugin/build/",
+      "<rootDir>/docs/"
     ]
   },
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
     ]
-  },
-  "release-it": {
-    "git": {
-      "commitMessage": "chore: release ${version}",
-      "tagName": "v${version}"
-    },
-    "npm": {
-      "publish": true
-    },
-    "github": {
-      "release": true
-    },
-    "plugins": {
-      "@release-it/conventional-changelog": {
-        "preset": {
-          "name": "angular"
-        }
-      }
-    }
   },
   "prettier": {
     "quoteProps": "consistent",

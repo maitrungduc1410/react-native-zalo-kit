@@ -35,7 +35,9 @@ export default defineConfig([
   {
     ignores: [
       'node_modules/',
-      'lib/'
+      'lib/',
+      'plugin/build/',
+      'docs/',
     ],
   },
 ]);

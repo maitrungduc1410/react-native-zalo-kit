@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,cpp}"
   s.private_header_files = "ios/**/*.h"
 
-  s.dependency "ZaloSDK"
+  s.dependency "ZaloSDK", "~> 4.1"
 
  install_modules_dependencies(s)
 end

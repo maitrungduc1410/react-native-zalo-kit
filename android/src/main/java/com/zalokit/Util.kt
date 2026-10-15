@@ -1,12 +1,12 @@
 package com.zalokit
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.util.Base64
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
+import com.zing.zalo.zalosdk.core.helper.AppInfo
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -24,7 +24,9 @@ object Util {
     while (iterator.hasNext()) {
       val key = iterator.next()
       val value = jsonObject[key]
-      if (value is JSONObject) {
+      if (value == JSONObject.NULL) {
+        map.putNull(key)
+      } else if (value is JSONObject) {
         map.putMap(key, convertJsonToMap(value))
       } else if (value is JSONArray) {
         map.putArray(key, convertJsonToArray(value))
@@ -32,8 +34,8 @@ object Util {
         map.putBoolean(key, value)
       } else if (value is Int) {
         map.putInt(key, value)
-      } else if (value is Double) {
-        map.putDouble(key, value)
+      } else if (value is Number) {
+        map.putDouble(key, value.toDouble())
       } else if (value is String) {
         map.putString(key, value)
       } else {
@@ -49,7 +51,9 @@ object Util {
 
     for (i in 0..<jsonArray.length()) {
       val value = jsonArray[i]
-      if (value is JSONObject) {
+      if (value == JSONObject.NULL) {
+        array.pushNull()
+      } else if (value is JSONObject) {
         array.pushMap(convertJsonToMap(value))
       } else if (value is JSONArray) {
         array.pushArray(convertJsonToArray(value))
@@ -57,8 +61,8 @@ object Util {
         array.pushBoolean(value)
       } else if (value is Int) {
         array.pushInt(value)
-      } else if (value is Double) {
-        array.pushDouble(value)
+      } else if (value is Number) {
+        array.pushDouble(value.toDouble())
       } else if (value is String) {
         array.pushString(value)
       } else {
@@ -68,20 +72,9 @@ object Util {
     return array
   }
 
-  @Throws(Exception::class)
-  fun getApplicationHashKey(ctx: Context): String {
-    val info = ctx.packageManager.getPackageInfo(ctx.packageName, PackageManager.GET_SIGNATURES)
-    for (signature in info.signatures!!) {
-      val md = MessageDigest.getInstance("SHA")
-      md.update(signature.toByteArray())
-      val sig = Base64.encodeToString(md.digest(), Base64.DEFAULT).trim { it <= ' ' }
-      if (sig.trim { it <= ' ' }.length > 0) {
-        return sig
-      }
-    }
-
-    return ""
-  }
+  /** Must stay identical to the `sign_key` the Zalo SDK sends, so delegate to the SDK itself. */
+  fun getApplicationHashKey(ctx: Context): String =
+    AppInfo.getApplicationHashKey(ctx) ?: ""
 
   fun generateCodeVerifier(): String {
     val sr = SecureRandom()

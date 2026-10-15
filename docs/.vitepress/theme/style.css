@@ -1,0 +1,111 @@
+/*
+ * Identity: Zalo blue #0573ff. It is 4.3:1 on white and 4.0:1 on the dark
+ * background, just under the 4.5:1 needed for body text, so links and other
+ * text-bearing brand colors use a darker shade in the light theme (#0062db,
+ * 5.6:1) and a lighter one in the dark theme (#4d9bff, 6.0:1). The hero name
+ * is large text (3:1), so its gradient stays at or above that. Brand buttons
+ * keep #0573ff on purpose: white on it is 4.3:1, slightly under AA for their
+ * 14-16px labels; use #0062db there if strict AA matters more than the brand.
+ */
+:root {
+  --zk-identity: #0573ff;
+  --zk-identity-2: #0a8cff;
+
+  --vp-c-brand-1: #0062db;
+  --vp-c-brand-2: #0052b8;
+  --vp-c-brand-3: #0573ff;
+  --vp-c-brand-soft: rgba(5, 115, 255, 0.14);
+
+  --vp-button-brand-text: #ffffff;
+  --vp-button-brand-bg: var(--zk-identity);
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-hover-text: #ffffff;
+  --vp-button-brand-hover-bg: #0062db;
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-active-text: #ffffff;
+  --vp-button-brand-active-bg: #0052b8;
+  --vp-button-brand-active-border: transparent;
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(
+    120deg,
+    var(--zk-identity) 30%,
+    var(--zk-identity-2)
+  );
+  --vp-home-hero-image-background-image: radial-gradient(
+    closest-side,
+    rgba(5, 115, 255, 0.35),
+    rgba(10, 140, 255, 0.12) 55%,
+    transparent
+  );
+  --vp-home-hero-image-filter: blur(40px);
+}
+
+.dark {
+  --vp-c-brand-1: #4d9bff;
+  --vp-c-brand-2: #3388ff;
+  --vp-c-brand-3: #0573ff;
+  --vp-c-brand-soft: rgba(5, 115, 255, 0.2);
+
+  --vp-home-hero-name-background: linear-gradient(
+    120deg,
+    #3388ff 30%,
+    #33b3ff
+  );
+}
+
+.home-section {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 48px 24px 0;
+}
+
+.home-section h2 {
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.home-section > p {
+  color: var(--vp-c-text-2);
+}
+
+.home-section .vp-doc div[class*='language-'] {
+  margin: 16px 0;
+}
+
+.demo-shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+.demo-shots figure {
+  margin: 0;
+  text-align: center;
+}
+
+.demo-shots img {
+  max-height: 520px;
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.demo-shots figcaption {
+  margin-top: 8px;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+}
+
+.portal-shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.portal-shots img {
+  max-width: min(100%, 420px);
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+}

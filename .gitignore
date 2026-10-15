@@ -84,3 +84,14 @@ android/generated
 
 # React Native Nitro Modules
 nitrogen/
+
+# Expo config plugin build
+plugin/build/
+
+# Kotlin compiler sessions
+.kotlin/
+
+# Docs site
+docs/api/
+docs/.vitepress/dist/
+docs/.vitepress/cache/

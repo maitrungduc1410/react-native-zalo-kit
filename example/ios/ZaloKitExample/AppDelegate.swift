@@ -29,8 +29,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       in: window,
       launchOptions: launchOptions
     )
-    
-    ZaloSDK.sharedInstance().initialize(withAppId: "2451745039837416278")
 
     return true
   }

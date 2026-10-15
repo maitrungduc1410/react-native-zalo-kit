@@ -65,5 +65,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>ZaloAppID</key>
+	<string>2451745039837416278</string>
 </dict>
 </plist>
