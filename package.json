@@ -1,6 +1,6 @@
 {
   "name": "react-native-zalo-kit",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Zalo SDK (login and user profile) for React Native and Expo",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
